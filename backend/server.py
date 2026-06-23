@@ -55,7 +55,7 @@ load_dotenv(_project_root / ".env")
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -349,19 +349,28 @@ class ResearchRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Serve the React frontend (SPA)
+# Serve frontend (legacy HTML preferred; React dist as fallback)
 # ---------------------------------------------------------------------------
 
 _FRONTEND_DIST = _project_root / "frontend" / "dist"
 _FRONTEND_LEGACY = _project_root / "frontend-legacy"
 
+# Set USE_REACT_FRONTEND=1 to serve the Vite build instead of frontend-legacy HTML.
+_USE_REACT = os.getenv("USE_REACT_FRONTEND", "").strip().lower() in ("1", "true", "yes")
+
+
+def _legacy_html(filename: str) -> HTMLResponse:
+    path = _FRONTEND_LEGACY / filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail=f"{filename} not found in frontend-legacy/")
+    return HTMLResponse(path.read_text(encoding="utf-8"))
+
 
 def _spa_index() -> FileResponse:
-    """Return the built React index.html for client-side routes."""
+    """Return the built React index.html (fallback when legacy is disabled or missing)."""
     index = _FRONTEND_DIST / "index.html"
     if index.is_file():
         return FileResponse(index, media_type="text/html")
-    # Fallback to legacy HTML during local dev without a frontend build
     legacy = _FRONTEND_LEGACY / "Forecast_Integrated_Chat.html"
     if legacy.is_file():
         return FileResponse(legacy, media_type="text/html")
@@ -369,6 +378,12 @@ def _spa_index() -> FileResponse:
         status_code=404,
         detail="Frontend not found. Run: cd frontend && npm install && npm run build",
     )
+
+
+def _serve_main_frontend():
+    if not _USE_REACT and (_FRONTEND_LEGACY / "Forecast_Integrated_Chat.html").is_file():
+        return _legacy_html("Forecast_Integrated_Chat.html")
+    return _spa_index()
 
 
 def _static_asset(*candidates: Path, media_type: str) -> FileResponse:
@@ -398,7 +413,7 @@ async def serve_profile_image():
 
 @app.get("/")
 async def serve_frontend():
-    return _spa_index()
+    return _serve_main_frontend()
 
 
 # ---------------------------------------------------------------------------
@@ -1139,9 +1154,6 @@ def compute_forecast(assumptions: dict, selected_parameters: list) -> dict:
 
     Handles: unit conversion (rate, per100k, per1M), YoY growth, linear/S-curve adoption.
     """
-
-    print("assumptions", assumptions)
-    print("selected_parameters", selected_parameters)
 
     params = set(selected_parameters or [])
 
@@ -1900,9 +1912,11 @@ async def get_excel_data(session_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/preview_excel")
+@app.get("/preview_excel", response_class=HTMLResponse)
 async def render_index():
-    """Excel viewer — React route /preview_excel."""
+    """Excel viewer — legacy index.html or React /preview_excel."""
+    if not _USE_REACT and (_FRONTEND_LEGACY / "index.html").is_file():
+        return _legacy_html("index.html")
     return _spa_index()
 
 @app.get("/api/excel")
@@ -2196,7 +2210,9 @@ def _backup_prompt(name: str) -> str:
 
 @app.get("/prompt-editor")
 async def serve_prompt_studio():
-    """Prompt Studio — React route /prompt-editor."""
+    """Prompt Studio — legacy prompt_studio.html or React route."""
+    if not _USE_REACT and (_FRONTEND_LEGACY / "prompt_studio.html").is_file():
+        return _legacy_html("prompt_studio.html")
     return _spa_index()
 
 
@@ -2812,8 +2828,8 @@ async def upload_prompt_resource(file: UploadFile = File(...)):
     return {"name": file.filename, "content": content, "size": len(raw_bytes)}
 
 
-# Mount Vite build assets (JS/CSS bundles)
-if (_FRONTEND_DIST / "assets").is_dir():
+# Mount Vite build assets only when React frontend is active
+if _USE_REACT and (_FRONTEND_DIST / "assets").is_dir():
     app.mount("/assets", StaticFiles(directory=_FRONTEND_DIST / "assets"), name="frontend-assets")
 
 

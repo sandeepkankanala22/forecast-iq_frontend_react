@@ -1,5 +1,5 @@
 @echo off
-uvicorn forecast_server:app --reload --port 8000 ^
+uvicorn forecast_server:app --reload --port 8002 ^
   --reload-exclude "data/runs/*/scripts/*.py" ^
   --reload-exclude "data/runs/*/*/*.py" ^
   --reload-exclude "data/runs/*/*.py" ^
