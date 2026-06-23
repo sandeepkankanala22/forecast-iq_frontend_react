@@ -1,0 +1,105 @@
+{
+  "_comment": "Workbook config: sheet count, sheet types, theming, and general instructions. User input is assumed to have all required inputs.",
+  "_version": "1.0",
+
+  "sheet_format_defaults": {
+    "_comment": "How many sheets and their types/definitions",
+    "num_sheets": 3,
+    "sheets": [
+      {
+        "name": "Inputs",
+        "type": "inputs",
+        "description": "Informative display of assumption parameters: base values, YoY growth, ranges, and rationale. Not a single-column list—show growth rates, year-over-year values, range (min-max), and rationale where available.",
+        "structure": {
+          "layout": "horizontal",
+          "tables": ["General Parameters", "Forecast parameters"],
+          "columns": "Label | Base Value | YoY Growth (%) | Range | Rationale/Notes; for time-varying params use year columns with values per year",
+          "rows": "assumption_indicators_with_metadata",
+          "formula_references": true,
+          "input_columns": ["Parameter", "Base Value", "YoY Growth", "Range (min-max)", "Notes/Rationale"]
+        },
+        "sections": [{"table":"General Parameters", "sections":["Product Name", "Indication", "Country", "Launch Year", "Forecast - End Year"]}, {"table":"Forecast parameters", "sections":["Population indicators (value, yoyGrowth, range)", "Epidemiology Metrics (value, growth_rate, range)", "Patient funnel rates (value, growth_rate)", "market share assumptions (value, timeToPeak, curve)", "pricing and revenue parameters (value, range)"]}],
+        "notes": ["Make Inputs sheet informative: include Base Value, YoY Growth (%), Range where available. For params with yoyGrowth or growth_rate, show both value and growth. Add Rationale/Notes column when present in assumptions. Fill actual years/months in column headers. No single-column layout—use multiple columns per parameter."]
+      },
+      {
+        "name": "Calculations",
+        "type": "calculations",
+        "description": "Contains forecast calculations referencing the Inputs sheet. Use formulas to calculate values based on assumptions.",
+        "structure": {
+          "layout": "horizontal",
+          "columns": "years or months based on granularity",
+          "rows": "calculated_metrics",
+          "formula_references": true
+        },
+        "sections": ["All the columns and rows from the Inputs sheet", "Added calucalted cells at each iteration"],
+        "notes": ["import all values from the input sheet and reference them within the caluculation sheet"]
+      },
+      {
+        "name": "Summary",
+        "type": "summary",
+        "description": "Key outputs only. Reference or pull values from the Calculations sheet; no intermediate formulas, only final calculated values.",
+        "structure": {
+          "layout": "horizontal",
+          "columns": "years or months based on granularity",
+          "rows": "summary_metrics",
+          "formula_references": true
+        },
+        "sections": ["Key Outputs", "Summary Metrics"],
+        "notes": ["Populate from Calculations. If multiple 0s or #REF!/#DIV/0! appear, fix upstream references."]
+      }
+    ],
+    "single_sheet_option": {
+      "name": "Forecast Model",
+      "type": "single",
+      "description": "All-in-one sheet with inputs and calculations combined",
+      "structure": { "layout": "horizontal", "sections_combined": true, "input_section_first": true }
+    }
+  },
+
+  "general_theming": {
+    "_comment": "Default styling and appearance",
+    "header_style": "bold with subtle background",
+    "table_style": "borders and alternating row shading",
+    "number_format": "standard numeric with optional decimals",
+    "font": "default system font",
+    "accent_color": "blue"
+  },
+
+  "general_instructions": "Patient funnel — iterative chain matching forecast_server.py compute_forecast exactly: (1) Total Population = base_population × (1 + pop_growth)^year_index; (2) Affected = Total Population × prevalence_or_incidence_rate; (3) Diagnosed = Affected × diagnosis_rate; (4) Eligible = Diagnosed × eligibility_rate; (5) Eligible_for_treat = Eligible × severity_rate [if severity selected, else same as Eligible]; (6) Treated = Eligible_for_treat × treatment_rate; (7) Treated_net = Treated × (1 − progression_rate) [if progression selected, else same as Treated]; (8) Class Patients = Treated_net × class_share (S-curve normalized logistic k=5); (9) Product Patients = Class Patients × product_share (S-curve); (10) Gross Sales ($M) = Product Patients × annual_cost_per_patient / 1,000,000; (11) Net Sales ($M) = Gross Sales × (1 − discount_rate). Peak Net Sales ($M) = MAX of Net Sales across all forecast years. CRITICAL: Class Patients multiplies Treated_net (step 7), NOT Eligible (step 4) — this must be correct in all Excel formulas. Forecast period: Must include launch_year and peak_year (inclusive). Use peak_year − launch_year + 1 when both present; else follow forecast_period_resolution.",
+
+  "general_defaults": {
+    "forecast_period": 10,
+    "granularity": "yearly",
+    "forecast_period_resolution": {
+      "_comment": "Forecast must include launch_year and peak_year (inclusive). Resolve in this order.",
+      "priority": ["user_input.forecast_period", "launch_year_and_peak_year", "user_input.time_to_peak_or_adoptionPeakTime", "default"],
+      "rules": "1) Check user input for forecast_period. If present, ensure it covers launch through peak. 2) If launch_year and peak_year both present: forecast_period = peak_year - launch_year + 1 (inclusive). 3) Else if time_to_peak (adoptionPeakTime.value, classShare.timeToPeak, peakProductShare.timeToPeak) present, use as forecast_period. 4) Else default 10.",
+      "default": 10
+    }
+  },
+  "population_defaults": {
+    "base_population": { "value": 300000000, "source": "assumed" },
+    "population_growth_rate": 0.05,
+    "epidemiology": { "metric_type": "incidence", "value": 0.05, "growth_rate": 0 },
+    "patient_funnel": {
+      "diagnosis_rate": { "value": 0.75, "growth_rate": 0 },
+      "eligibility_rate": { "value": 0.8, "growth_rate": 0 },
+      "treatment_rate": { "value": 0.6, "growth_rate": 0 }
+    }
+  },
+  "market_defaults": {
+    "class_share": { "lower_limit": 0.05, "upper_limit": 0.3, "trend_curve": "s_curve", "curve_steepness": "medium", "time_to_peak": 5 },
+    "product_share_within_class": { "lower_limit": 0.02, "upper_limit": 0.25, "trend_curve": "s_curve", "curve_steepness": "steep", "time_to_peak": 5 }
+  },
+  "revenue_defaults": {
+    "compliance_rate": 0.85,
+    "avg_dosage_per_patient": 12,
+    "pricing": { "gross_price": 10000, "discount_percentage": 0.15, "net_price": 8500 }
+  },
+  "disease_specific_defaults": {},
+  "market_position_defaults": {},
+  "growth_scenario_modifiers": {},
+  "granularity_adjustments": {},
+  "validation_rules": { "rates": { "min": 0, "max": 1 }, "forecast_period": { "min": 1, "max": 50 } },
+  "confidence_thresholds": { "high": 0.8, "medium": 0.5, "low": 0 }
+}

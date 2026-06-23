@@ -1,0 +1,6 @@
+data/runs/
+data/output/
+data/logs/
+*.xlsx
+*.json
+*.csv

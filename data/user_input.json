@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-06-23T07:23:49.126Z",
+  "product_info": {
+    "country": "Japan",
+    "productName": "Tub 040",
+    "classMoa": "Antibody",
+    "indication": "Non small lung cancer",
+    "launchYear": "2025",
+    "peakYear": "2030"
+  },
+  "forecast_flow": {
+    "preset": "standard",
+    "epidemiology_type": "prevalence",
+    "parameter_order": [
+      "population",
+      "prevalence",
+      "diagnosisRate",
+      "treatmentRate",
+      "eligibilityCriteria",
+      "classShare",
+      "peakProductShare",
+      "annualCostPerPatient",
+      "discount"
+    ],
+    "parameter_labels": {
+      "population": "Total Population",
+      "prevalence": "Prevalence Rate",
+      "incidence": "Incidence Rate",
+      "severity": "Severity / Subtype %",
+      "diagnosisRate": "Diagnosis Rate",
+      "treatmentRate": "Treatment Rate",
+      "eligibilityCriteria": "Eligibility Criteria",
+      "progressionRate": "Disease Progression Rate",
+      "classShare": "Peak Class Share",
+      "peakProductShare": "Peak Product Share",
+      "annualCostPerPatient": "Annual Cost per Patient",
+      "discount": "Discount/Rebate Rate",
+      "adoptionPeakTime": "Time to Peak (Years)"
+    }
+  },
+  "selected_parameters": [
+    "population",
+    "prevalence",
+    "diagnosisRate",
+    "treatmentRate",
+    "eligibilityCriteria",
+    "classShare",
+    "peakProductShare",
+    "annualCostPerPatient",
+    "discount"
+  ],
+  "custom_parameters": {},
+  "assumptions": {},
+  "forecast_results": []
+}

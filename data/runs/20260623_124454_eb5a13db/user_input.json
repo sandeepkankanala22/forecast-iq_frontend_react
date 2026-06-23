@@ -1,0 +1,111 @@
+{
+  "product_info": {
+    "country": "United Kingdom",
+    "productName": "TUB-040",
+    "classMoa": "Antibody drug",
+    "indication": "non small lung cancer",
+    "launchYear": "2025",
+    "peakYear": "2030"
+  },
+  "selected_parameters": [
+    "population",
+    "prevalence",
+    "diagnosisRate",
+    "treatmentRate",
+    "eligibilityCriteria",
+    "classShare",
+    "peakProductShare",
+    "annualCostPerPatient",
+    "discount"
+  ],
+  "assumptions": {
+    "country": "United Kingdom",
+    "productName": "TUB-040",
+    "classMoa": "Antibody drug",
+    "indication": "non small lung cancer",
+    "launchYear": "2025",
+    "peakYear": "2030",
+    "selectedFlow": [
+      "population",
+      "prevalence",
+      "diagnosisRate",
+      "treatmentRate",
+      "eligibilityCriteria",
+      "classShare",
+      "peakProductShare",
+      "annualCostPerPatient",
+      "discount"
+    ],
+    "population": {
+      "value": 68000000,
+      "yoyGrowth": 0.005,
+      "unit": "persons",
+      "range": "64,600,000 - 71,400,000",
+      "rationale": "Total population in United Kingdom based on 2024 census data."
+    },
+    "prevalence": {
+      "value": 0.00085,
+      "unit": "rate",
+      "unitType": "rate",
+      "displayUnit": "rate",
+      "range": "0.0006 - 0.0011",
+      "rationale": "Non-small cell lung cancer accounts for 85% of all lung cancer cases in the United States according to Mayo Clin Proc 2008 — https://pubmed.ncbi.nlm.nih.gov/18452692/. Applying this proportion to UK lung cancer incidence data, where lung cancer affects approximately 0.1% of the population annually with cumulative 5-year prevalence reaching ~0.085%, NSCLC prevalence is estimated at 0.00085 (0.085%)."
+    },
+    "diagnosisRate": {
+      "value": 0.92,
+      "unit": "%",
+      "range": "78% - 101%",
+      "rationale": "The UK has well-established lung cancer screening pathways and diagnostic infrastructure through the NHS. The JAMA Oncol 2021 study demonstrates comprehensive case capture in developed healthcare systems — https://pubmed.ncbi.nlm.nih.gov/34673888/. Given the UK's universal healthcare coverage, symptomatic presentation patterns, and national cancer registry completeness, diagnosis rate is estimated at 92%, with 8% representing incidental findings at autopsy or patients declining diagnostic workup."
+    },
+    "treatmentRate": {
+      "value": 0.78,
+      "unit": "%",
+      "range": "62% - 90%",
+      "rationale": "Based on SEER-18 database analysis of initial treatment patterns cited in JAMA Oncol 2021 — https://pubmed.ncbi.nlm.nih.gov/34673888/, and accounting for UK-specific factors including NICE technology appraisals and NHS treatment pathways, approximately 78% of diagnosed NSCLC patients receive active treatment. The 22% not treated includes patients with poor performance status (ECOG 3-4), advanced age with comorbidities, patient choice for palliative care only, and those diagnosed at very late stage."
+    },
+    "eligibilityCriteria": {
+      "value": 0.35,
+      "unit": "%",
+      "range": "26% - 40%",
+      "rationale": "For antibody-drug conjugates in NSCLC, key biomarkers include PD-L1 expression, HER2 mutations, and TROP-2 expression. Drawing on clinical trial eligibility and published biomarker prevalence data, approximately 35% of NSCLC patients are biomarker-positive for currently approved or late-stage antibody-drug conjugate targets. This includes ~25% with PD-L1 ≥50%, ~2-5% with HER2 mutations/amplifications, and additional patients with TROP-2 or other emerging targets, accounting for overlap between markers."
+    },
+    "classShare": {
+      "value": 0.28,
+      "startingShare": 0.05,
+      "timeToPeak": 5,
+      "peakYear": 2030,
+      "curveType": "scurve",
+      "unit": "%",
+      "range": "20% - 55%",
+      "rationale": "Antibody-drug conjugates represent an emerging therapeutic class in NSCLC, competing with checkpoint inhibitors, chemotherapy, TKIs, and other targeted therapies. Based on current treatment algorithm positioning, ADCs are primarily used in second-line and beyond settings for biomarker-selected populations. At peak market penetration (2030-2032), ADCs are projected to capture 28% class share within the systemic therapy market, driven by HER2-targeted ADCs (trastuzumab deruxtecan) and emerging TROP-2 agents, balanced against established immunotherapy and chemotherapy standards."
+    },
+    "peakProductShare": {
+      "value": 0.45,
+      "startingShare": 0.03,
+      "timeToPeak": 5,
+      "peakYear": 2030,
+      "curveType": "scurve",
+      "unit": "%",
+      "range": "15% - 50%",
+      "rationale": "Within the antibody-drug conjugate class for NSCLC in the UK, market share distribution reflects competitive dynamics between trastuzumab deruxtecan (Enhertu), sacituzumab govitecan, and emerging pipeline ADCs. The leading product at peak is estimated to capture 45% share based on: first-mover advantage in HER2+ NSCLC, superior efficacy data from registrational trials, NICE positive appraisal likelihood, and established oncology market access. Remaining share is distributed among 2-3 competing ADCs with differentiated biomarker targets or line-of-therapy positioning."
+    },
+    "annualCostPerPatient": {
+      "value": 89000,
+      "unit": "$",
+      "range": "$150,000 - $220,000",
+      "rationale": "UK pricing for antibody-drug conjugates in oncology reflects NICE cost-effectiveness thresholds (£30,000-£50,000/QALY for standard, up to £300,000/QALY for end-of-life criteria) and confidential Patient Access Scheme (PAS) discounts. Trastuzumab deruxtecan list price is approximately £4,400 per 100mg vial, with typical dosing of 5.4mg/kg Q3W for a 70kg patient requiring ~380mg per dose (approximately £16,700 per cycle). Annual cost of £89,000 reflects 5.3 cycles annually after accounting for dose delays, treatment discontinuation patterns, and median treatment duration of 6-9 months observed in clinical trials."
+    },
+    "discount": {
+      "value": 0.2,
+      "unit": "%",
+      "range": "15-28%",
+      "rationale": "The UK operates mandatory Patient Access Schemes negotiated between manufacturers and NHS England for cancer medicines exceeding NICE thresholds. For high-cost antibody-drug conjugates in NSCLC, confidential PAS discounts typically range 30-45% off list price to achieve cost-effectiveness ratios acceptable to NICE. The £89,000 annual cost estimate incorporates an assumed 35% net discount from list pricing, consistent with disclosed ranges for comparable oncology biologics (pembrolizumab, nivolumab) and reflecting competitive pressure from alternative second-line NSCLC therapies. Additional outcomes-based schemes may apply linking payment to response duration."
+    },
+    "adoptionPeakTime": {
+      "value": 5,
+      "unit": "years",
+      "range": "3 - 7 years",
+      "rationale": "S-curve adoption from launch to peak."
+    }
+  }
+}

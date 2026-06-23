@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/Scripts/python -c ':*)",
+      "Bash(.venv/Scripts/pip install:*)",
+      "Bash(.venv/Scripts/pip.exe install:*)",
+      "Bash(printf '%s\\\\n' *.py)",
+      "Bash(xargs grep:*)",
+      "Bash(Get-ChildItem -Recurse -Force)",
+      "Bash(Select-Object -First 100)",
+      "Bash(Format-Table Name, Directory)",
+      "Bash(python -c \"import py_compile; py_compile.compile\\(r'c:\\\\Users\\\\SatyamKumar\\\\Downloads\\\\Forecasting Agent\\\\forecast_server.py', doraise=True\\); print\\('OK'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('forecast_server.py'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('forecast_server.py', encoding='utf-8'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
+      "Bash(python -c \"from pdfminer.high_level import extract_text; print\\('pdfminer.six OK'\\)\")",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(ConvertTo-Json)",
+      "Bash(xargs ls -lh)",
+      "Bash(git -C \"c:\\\\Users\\\\SatyamKumar\\\\Downloads\\\\Forecasting Agent\" log --oneline -20)",
+      "Bash(git restore *)",
+      "Bash(git show *)",
+      "Read(//tmp/**)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\SatyamKumar\\\\Downloads\\\\Forecasting Agent\" -Recurse -Depth 2)",
+      "Bash(Select-Object FullName)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
+  }
+}

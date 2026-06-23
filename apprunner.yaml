@@ -1,0 +1,75 @@
+version: 1.0
+runtime: python311
+build:
+  commands:
+    build:
+      - pip3 install --upgrade pip
+      - pip3 install -r requirements.txt --target /app/python
+run:
+  env:
+    - name: PYTHONPATH
+      value: /app/python
+    - name: MODEL_ID
+      value: us.anthropic.claude-3-5-haiku-20241022-v1:0
+    - name: MODEL_ID_CODER
+      value: us.anthropic.claude-sonnet-4-6
+    # Model Parameters
+    - name: DEFAULT_TEMPERATURE
+      value: "0.7"
+    - name: DEFAULT_MAX_TOKENS
+      value: "4096"
+    # Agent Temperatures
+    - name: DECOMPOSER_TEMPERATURE
+      value: "0.7"
+    - name: CRITIC_TEMPERATURE
+      value: "0.5"
+    - name: CRITIC_ACCEPT_THRESHOLD
+      value: "7.0"
+    - name: STYLING_TEMPERATURE
+      value: "0.6"
+    - name: MATH_TEMPERATURE
+      value: "0.3"
+    - name: DATA_TEMPERATURE
+      value: "0.6"
+    - name: COORDINATOR_TEMPERATURE
+      value: "0.7"
+    # Paths
+    - name: PROMPTS_DIR
+      value: excel_agent/prompts
+    - name: OUTPUT_DIR
+      value: data/output
+    - name: LOGS_DIR
+      value: data/logs
+    # Logging
+    - name: LOG_LEVEL
+      value: INFO
+    - name: LOG_TO_FILE
+      value: "true"
+    - name: LOG_TO_CONSOLE
+      value: "true"
+    # Retry
+    - name: MAX_RETRIES
+      value: "3"
+    - name: RETRY_BACKOFF_BASE
+      value: "2"
+    # Excel
+    - name: DEFAULT_FONT
+      value: Arial
+    - name: DEFAULT_FONT_SIZE
+      value: "11"
+    - name: ENABLE_PROMPT_CACHE
+      value: "true"
+    - name: CONVERSATION_HISTORY_LIMIT
+      value: "50"
+    - name: RECURSION_LIMIT
+      value: "300"
+    # S3
+    - name: S3_BUCKET
+      value: forecast-agent-bucket
+    - name: S3_PREFIX
+      value: forecast-agent
+    - name: S3_REGION
+      value: us-east-1
+  command: python3 -m uvicorn forecast_server:app --host 0.0.0.0 --port 8000
+  network:
+    port: 8000

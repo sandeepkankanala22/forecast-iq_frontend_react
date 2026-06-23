@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForecastIQ | Prompt Studio — Chryselys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #F5F6F8;
+      --surface:   #FFFFFF;
+      --text:      #1A2C3D;
+      --text-2:    #4A6580;
+      --primary:   #1A4F72;
+      --primary-h: #0F3351;
+      --border:    #E0E6ED;
+      --gold:      #C9922A;
+      --gold-light:#E8B84B;
+      --navy-light:#2E6A96;
+      --steel:     #A8C4D4;
+      --success:   #16a34a;
+      --success-bg:rgba(22,163,74,.09);
+      --warning:   #d97706;
+      --warning-bg:rgba(217,119,6,.09);
+      --danger:    #dc2626;
+      --danger-bg: rgba(220,38,38,.07);
+      --info:      #2563eb;
+      --info-bg:   rgba(37,99,235,.07);
+      --r8: 8px; --r12: 12px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      height: 100vh;
+      overflow: hidden;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      height: 58px;
+      background: linear-gradient(135deg, #0F2F47 0%, #1A4F72 60%, #1d5a82 100%);
+      border-bottom: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+      box-shadow: 0 3px 16px rgba(10,30,50,.35);
+      z-index: 100;
+    }
+    .navbar-left { display:flex; align-items:center; gap:12px; }
+    .navbar-logo { font-weight:700; color:var(--gold); font-size:15px; text-transform:uppercase; letter-spacing:-.2px; }
+    .navbar-divider { width:1px; height:22px; background:rgba(255,255,255,.18); }
+    .navbar-title { font-size:13px; color:#fff; font-weight:600; letter-spacing:.1px; }
+    .navbar-subtitle { font-size:10px; color:rgba(168,196,212,.75); font-weight:400; text-transform:uppercase; letter-spacing:.3px; }
+    .navbar-right { display:flex; align-items:center; gap:10px; }
+    .navbar-back-btn {
+      display:flex; align-items:center; gap:6px;
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+      color:#fff; font-size:12px; font-weight:500; padding:0 12px; height:32px;
+      border-radius:var(--r8); cursor:pointer; text-decoration:none;
+      transition:all .15s;
+    }
+    .navbar-back-btn:hover { background:rgba(201,146,42,.2); border-color:rgba(201,146,42,.5); }
+    .profile-chip {
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+      border-radius:24px; height:42px; padding:0 8px;
+      display:flex; align-items:center;
+    }
+    .profile-chip img { height:38px; width:auto; display:block; object-fit:contain; }
+
+    /* ── Studio shell ── */
+    .studio-shell {
+      display: grid;
+      grid-template-columns: 230px 1fr 390px;
+      flex: 1 1 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── Left: Prompt list ── */
+    .prompt-sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 16px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sidebar-header h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--text-2);
+    }
+    .sidebar-list { overflow-y: auto; flex: 1; padding: 8px 0; }
+    .sidebar-group-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: var(--steel);
+      padding: 10px 16px 4px;
+    }
+    .prompt-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all .12s;
+    }
+    .prompt-item:hover { background: var(--bg); }
+    .prompt-item.active {
+      background: rgba(26,79,114,.06);
+      border-left-color: var(--primary);
+    }
+    .prompt-item-icon {
+      width: 30px; height: 30px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .prompt-item.featured .prompt-item-icon {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--navy-light) 100%);
+      color: #fff;
+    }
+    .prompt-item:not(.featured) .prompt-item-icon {
+      background: var(--bg);
+      color: var(--text-2);
+      border: 1px solid var(--border);
+      font-size: 11px;
+    }
+    .prompt-item-body { flex: 1; min-width: 0; }
+    .prompt-item-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prompt-item-desc {
+      font-size: 10px;
+      color: var(--text-2);
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .prompt-item-badges { display:flex; align-items:center; gap:4px; margin-top:4px; }
+    .badge {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    .badge-step { background:var(--info-bg); color:var(--info); }
+    .badge-draft { background:var(--warning-bg); color:var(--warning); }
+
+    /* ── Center: Editor ── */
+    .editor-area {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .editor-topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .editor-topbar-left { flex: 1; min-width: 0; }
+    .editor-prompt-name { font-size: 16px; font-weight: 700; color: var(--text); }
+    .editor-prompt-desc { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+    .editor-topbar-actions { display:flex; align-items:center; gap:8px; }
+    .btn {
+      height: 34px; padding: 0 14px;
+      border-radius: var(--r8);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; border: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all .15s;
+    }
+    .btn-draft {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid rgba(217,119,6,.25);
+    }
+    .btn-draft:hover { background: rgba(217,119,6,.18); }
+    .btn-publish {
+      background: linear-gradient(135deg, var(--success) 0%, #14532d 100%);
+      color: #fff;
+    }
+    .btn-publish:hover { opacity:.88; }
+    .btn-publish:disabled { opacity:.4; cursor:not-allowed; }
+    .btn-discard {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid rgba(220,38,38,.2);
+    }
+    .btn-discard:hover { background: rgba(220,38,38,.12); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { background: var(--bg); color: var(--text); }
+
+    .draft-indicator {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--warning); font-weight: 600;
+    }
+    .draft-dot { width:7px; height:7px; border-radius:50%; background:var(--warning); }
+    .live-indicator {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--success); font-weight: 600;
+    }
+    .live-dot { width:7px; height:7px; border-radius:50%; background:var(--success); }
+
+    .editor-tab-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .editor-tab {
+      font-size: 12px; font-weight: 600;
+      color: var(--text-2);
+      padding: 10px 16px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .editor-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .editor-tab:hover:not(.active) { color: var(--text); }
+    .editor-tab-icon { margin-right: 4px; vertical-align: -1px; }
+    .editor-tab-schema { display: none; }
+
+    .editor-body { flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 16px; gap: 12px; }
+
+    .var-legend {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r8);
+      padding: 10px 14px;
+      flex-shrink: 0;
+    }
+    .var-legend-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-2); margin-bottom: 6px; }
+    .var-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .var-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      background: rgba(37,99,235,.07);
+      color: var(--info);
+      border: 1px solid rgba(37,99,235,.15);
+      border-radius: 4px;
+      padding: 2px 7px;
+      cursor: pointer;
+      transition: background .12s, border-color .12s;
+      user-select: none;
+    }
+    .var-chip:hover {
+      background: rgba(37,99,235,.15);
+      border-color: rgba(37,99,235,.35);
+    }
+    .var-chip-unknown {
+      background: rgba(201,146,42,.07);
+      color: var(--gold);
+      border-color: rgba(201,146,42,.25);
+    }
+    .var-chip-unknown:hover {
+      background: rgba(201,146,42,.15);
+      border-color: rgba(201,146,42,.5);
+    }
+    .var-legend-hint {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--steel);
+      margin-left: 6px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+.prompt-textarea {
+      flex: 1;
+      width: 100%;
+      font-family: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r8);
+      padding: 14px 16px;
+      resize: none;
+      outline: none;
+      tab-size: 2;
+      transition: border-color .15s;
+    }
+    .prompt-textarea:focus { border-color: var(--primary); }
+    .prompt-textarea::placeholder { color: var(--steel); }
+
+    /* Schema viewer tab */
+    .schema-viewer {
+      flex: 1;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r8);
+      padding: 16px;
+    }
+    .schema-viewer.visible { display: flex; }
+    .schema-viewer-note {
+      font-size: 11px;
+      color: var(--info);
+      line-height: 1.55;
+      background: var(--info-bg);
+      border: 1px solid rgba(37,99,235,.15);
+      border-radius: var(--r8);
+      padding: 9px 12px;
+    }
+    .schema-viewer-pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r8);
+      padding: 14px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      flex: 1;
+    }
+    .schema-viewer-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-2);
+    }
+
+    /* Locked output schema panel */
+    .locked-schema-panel {
+      flex-shrink: 0;
+      border: 1.5px solid rgba(201,146,42,.35);
+      border-radius: var(--r8);
+      background: rgba(201,146,42,.04);
+      overflow: hidden;
+    }
+    .locked-schema-header {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 12px;
+      background: rgba(201,146,42,.09);
+      border-bottom: 1px solid rgba(201,146,42,.2);
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--gold);
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .locked-schema-body {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; line-height: 1.6;
+      color: var(--text-2);
+      padding: 10px 14px;
+      white-space: pre;
+      overflow-x: auto;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .editor-footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 6px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .editor-footer-meta { font-size: 10px; color: var(--text-2); }
+
+    /* ── Right: Test Panel ── */
+    .test-panel {
+      border-left: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .test-panel-header {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .test-panel-header h3 { font-size: 13px; font-weight: 700; color: var(--text); }
+    .test-panel-body { flex: 0 1 auto; overflow-y: auto; display: flex; flex-direction: column; max-height: 46%; min-height: 80px; }
+
+    .test-section {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .test-section-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; color: var(--text-2); margin-bottom: 10px;
+    }
+    .test-field { margin-bottom: 10px; }
+    .test-field label { font-size: 11px; font-weight: 600; color: var(--text); display:block; margin-bottom: 4px; }
+    .test-field input, .test-field select, .test-field textarea {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r8);
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color .12s;
+    }
+    .test-field input:focus, .test-field select:focus, .test-field textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .test-field textarea { resize: vertical; min-height: 70px; }
+    .test-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .test-field input.field-invalid,
+    .test-field select.field-invalid {
+      border-color: var(--danger) !important;
+      background: var(--danger-bg) !important;
+    }
+    .field-error-msg {
+      font-size: 10px;
+      color: var(--danger);
+      font-weight: 600;
+      margin-top: 3px;
+      display: none;
+    }
+    .field-error-msg.visible { display: block; }
+    .required-star { color: var(--danger); }
+
+    /* Resources */
+    .resource-list { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+    .resource-card {
+      display: flex; align-items: flex-start; gap: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r8); padding: 8px 10px;
+    }
+    .resource-type-icon {
+      width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+    }
+    .resource-type-icon.url { background:var(--info-bg); color:var(--info); }
+    .resource-type-icon.text { background:var(--success-bg); color:var(--success); }
+    .resource-type-icon.file { background:rgba(124,58,237,.08); color:#7c3aed; }
+    .resource-card-body { flex:1; min-width:0; }
+    .resource-card-name { font-size:11px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .resource-card-preview { font-size:10px; color:var(--text-2); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .resource-remove {
+      background:none; border:none; color:var(--text-2); cursor:pointer;
+      font-size:14px; line-height:1; padding:0; flex-shrink:0;
+    }
+    .resource-remove:hover { color:var(--danger); }
+    .resource-add-bar { display:flex; gap:6px; margin-bottom:6px; }
+    .resource-add-bar input {
+      flex:1; font-family:'Inter',sans-serif; font-size:11px;
+      background:var(--bg); border:1px solid var(--border);
+      border-radius: var(--r8); padding:6px 8px; outline:none; color:var(--text);
+    }
+    .resource-add-bar input:focus { border-color:var(--primary); background:#fff; }
+    .btn-add-resource {
+      height:30px; padding:0 10px; border-radius:var(--r8); font-size:11px; font-weight:600;
+      cursor:pointer; border:1px solid var(--border); background:var(--bg); color:var(--text-2);
+      white-space:nowrap; transition:all .12s;
+    }
+    .btn-add-resource:hover { border-color:var(--primary); color:var(--primary); background:#fff; }
+    .file-drop-zone {
+      border: 1.5px dashed var(--border);
+      border-radius: var(--r8);
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .12s;
+      position: relative;
+    }
+    .file-drop-zone:hover, .file-drop-zone.dragover { border-color:var(--primary); background:rgba(26,79,114,.04); }
+    .file-drop-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .file-drop-zone-text { font-size:11px; color:var(--text-2); pointer-events:none; }
+
+    /* Run test button */
+    .test-run-area { padding:12px 16px; flex-shrink:0; border-bottom:1px solid var(--border); }
+    .btn-run {
+      width:100%; height:38px; border-radius:var(--r8);
+      background:linear-gradient(135deg, var(--primary) 0%, var(--navy-light) 100%);
+      color:#fff; font-size:13px; font-weight:700;
+      cursor:pointer; border:none;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      transition:opacity .15s;
+    }
+    .btn-run:hover { opacity:.88; }
+    .btn-run:disabled { opacity:.4; cursor:not-allowed; }
+    .spinner {
+      width:14px; height:14px;
+      border:2px solid rgba(255,255,255,.3);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin .7s linear infinite;
+      display:none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Preview area */
+    .preview-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .preview-tab-bar {
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      display: flex;
+      gap: 0;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .preview-tab-bar-left { display:flex; }
+    .preview-tab {
+      font-size: 11px; font-weight: 600;
+      color: var(--text-2);
+      padding: 9px 12px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .preview-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .preview-tab:hover:not(.active) { color: var(--text); }
+    .preview-content { flex:1; overflow-y:auto; padding:14px 16px; }
+    .preview-placeholder {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 140px; gap: 8px;
+    }
+    .preview-placeholder-icon { font-size:28px; opacity:.3; }
+    .preview-placeholder-text { font-size:12px; color:var(--text-2); }
+
+    /* ── Funnel visual ── */
+    .funnel-container { display:flex; flex-direction:column; gap:0; }
+    .funnel-stage {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .funnel-stage-left { display:flex; flex-direction:column; align-items:center; width:20px; flex-shrink:0; }
+    .funnel-node {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--primary); border: 2px solid #fff;
+      box-shadow: 0 0 0 2px var(--primary);
+      flex-shrink: 0;
+    }
+    .funnel-node.rate { background: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+    .funnel-connector { width: 2px; flex:1; background: var(--border); min-height: 16px; }
+    .funnel-stage-body {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r8);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .funnel-stage-label { font-size:12px; font-weight:700; color:var(--text); }
+    .funnel-stage-value {
+      font-size:14px; font-weight:800; color:var(--primary); margin-top:2px;
+    }
+    .funnel-stage-value.rate { color:var(--gold); }
+    .funnel-stage-range { font-size:10px; color:var(--text-2); margin-top:2px; }
+    .funnel-stage-notes { font-size:10px; color:var(--text-2); margin-top:4px; font-style:italic; }
+    .funnel-summary {
+      background: rgba(26,79,114,.04);
+      border: 1px solid rgba(26,79,114,.12);
+      border-radius: var(--r8);
+      padding: 10px 12px;
+      margin-top: 8px;
+      font-size:11px;
+      color:var(--text-2);
+      line-height:1.5;
+    }
+
+    /* ── Assumptions visual ── */
+    .assumption-group { margin-bottom: 14px; }
+    .assumption-group-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; color: var(--text-2); margin-bottom: 6px;
+      padding-bottom: 4px; border-bottom: 1px solid var(--border);
+    }
+    .assumption-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 5px 0;
+    }
+    .assumption-key { font-size:11px; color:var(--text-2); }
+    .assumption-value {
+      font-size:11px; font-weight:700; color:var(--primary);
+      font-family:'JetBrains Mono', monospace;
+    }
+
+    /* ── JSON view ── */
+    .json-view {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ── Error / loading ── */
+    .error-box {
+      background: var(--danger-bg);
+      border: 1px solid rgba(220,38,38,.2);
+      border-radius: var(--r8);
+      padding: 10px 12px;
+      font-size:12px; color:var(--danger);
+    }
+    .loading-box {
+      display:flex; align-items:center; gap:8px;
+      background: var(--info-bg);
+      border: 1px solid rgba(37,99,235,.15);
+      border-radius: var(--r8);
+      padding: 10px 12px;
+      font-size:12px; color:var(--info);
+    }
+    .loading-spinner-sm {
+      width:12px; height:12px;
+      border:2px solid rgba(37,99,235,.3);
+      border-top-color:var(--info);
+      border-radius:50%;
+      animation:spin .7s linear infinite;
+    }
+
+    /* ── Publish modal ── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(10,20,35,.55);
+      backdrop-filter: blur(2px);
+      z-index: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display:flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.25);
+      padding: 28px;
+      width: 420px;
+      max-width: 95vw;
+    }
+    .modal h3 { font-size:16px; font-weight:700; color:var(--text); margin-bottom:8px; }
+    .modal p { font-size:13px; color:var(--text-2); line-height:1.55; margin-bottom:20px; }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+    /* ── Toast ── */
+    .toast-container { position:fixed; bottom:24px; right:24px; z-index:1000; display:flex; flex-direction:column; gap:8px; }
+    .toast {
+      background: var(--text);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: var(--r8);
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      animation: slideIn .2s ease;
+    }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.warning { background: var(--warning); }
+    @keyframes slideIn { from { transform:translateY(12px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:5px; height:5px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--steel); }
+
+    /* ── Prompt Studio: Flow Builder (Step 2 preview) ── */
+    .ps-flow-container { display:flex; flex-direction:column; gap:12px; }
+
+    .ps-ai-banner {
+      background: linear-gradient(135deg, rgba(26,79,114,.06) 0%, rgba(201,146,42,.06) 100%);
+      border: 1px solid rgba(26,79,114,.18);
+      border-radius: var(--r12);
+      padding: 12px 14px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .ps-ai-icon {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--navy-light) 100%);
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .ps-ai-content { flex: 1; min-width: 0; }
+    .ps-ai-title { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .ps-ai-text { font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 8px; }
+    .ps-ai-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .ps-ai-chip {
+      font-size: 10px; font-weight: 600;
+      background: rgba(26,79,114,.08); color: var(--primary);
+      border: 1px solid rgba(26,79,114,.2); border-radius: 12px; padding: 2px 8px;
+    }
+    .ps-ai-apply {
+      font-size: 10px; font-weight: 700; color: var(--gold); cursor: pointer;
+      background: rgba(201,146,42,.08); border: 1px solid rgba(201,146,42,.2);
+      border-radius: var(--r8); padding: 4px 10px; margin-top: 6px;
+      display: inline-block; transition: all .12s;
+    }
+    .ps-ai-apply:hover { background: rgba(201,146,42,.15); }
+
+    .ps-presets-bar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .ps-presets-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-2); flex-shrink: 0; }
+    .ps-preset-chip {
+      font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 20px;
+      cursor: pointer; border: 1.5px solid var(--border);
+      background: var(--bg); color: var(--text-2); transition: all .12s;
+    }
+    .ps-preset-chip:hover { border-color: var(--primary); color: var(--primary); background: rgba(26,79,114,.04); }
+    .ps-preset-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .ps-category {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r12); overflow: hidden;
+    }
+    .ps-category-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; background: rgba(26,79,114,.03); border-bottom: 1px solid var(--border);
+    }
+    .ps-category-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--primary); }
+    .ps-add-btn {
+      font-size: 10px; font-weight: 600; color: var(--text-2);
+      background: none; border: 1px solid var(--border); border-radius: 5px;
+      padding: 2px 8px; cursor: pointer; transition: all .12s;
+    }
+    .ps-add-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    .ps-param-list { padding: 4px 0; }
+    .ps-param-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 14px; cursor: pointer; transition: background .1s;
+    }
+    .ps-param-item:hover { background: var(--bg); }
+    .ps-param-item.ps-disabled { cursor: default; }
+    .ps-param-item.ps-disabled:hover { background: transparent; }
+
+    .ps-param-ctrl { flex-shrink: 0; margin-top: 2px; }
+    .ps-param-ctrl input[type="checkbox"],
+    .ps-param-ctrl input[type="radio"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--primary); }
+    .ps-param-ctrl input:disabled { cursor: default; }
+
+    .ps-param-body { flex: 1; min-width: 0; }
+    .ps-param-header-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .ps-param-label { font-size: 12px; font-weight: 600; color: var(--text); }
+    .ps-param-badge {
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; padding: 1px 5px; border-radius: 3px;
+    }
+    .ps-param-badge.required  { background: rgba(26,79,114,.1);    color: var(--primary); }
+    .ps-param-badge.optional  { background: rgba(22,163,74,.08);   color: var(--success); }
+    .ps-param-badge.choose-one{ background: rgba(201,146,42,.1);   color: var(--gold); }
+    .ps-param-desc { font-size: 10px; color: var(--text-2); margin-top: 2px; line-height: 1.4; }
+    .ps-param-rationale {
+      font-size: 10px; color: var(--primary); margin-top: 3px; font-style: italic; line-height: 1.4;
+      border-left: 2px solid rgba(26,79,114,.2); padding-left: 6px;
+    }
+
+    .ps-flow-diagram {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 0; padding: 14px;
+      overflow-x: auto; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r12);
+    }
+    .ps-flow-step {
+      display: flex; flex-direction: column; align-items: center; padding: 8px 10px;
+      background: var(--surface); border: 1.5px solid var(--primary); border-radius: var(--r8);
+      min-width: 72px; text-align: center;
+    }
+    .ps-flow-step-icon { font-size: 16px; margin-bottom: 3px; }
+    .ps-flow-step-label { font-size: 10px; font-weight: 600; color: var(--primary); line-height: 1.3; }
+    .ps-flow-arrow { color: var(--text-2); font-size: 16px; padding: 0 2px; flex-shrink: 0; }
+    .ps-flow-step-custom { border-color: var(--gold); }
+    .ps-flow-step-custom .ps-flow-step-label { color: var(--gold); }
+
+    .ps-market-summary {
+      background: rgba(26,79,114,.04); border: 1px solid rgba(26,79,114,.12);
+      border-radius: var(--r8); padding: 10px 12px;
+      font-size: 11px; color: var(--text-2); line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <span class="navbar-logo">Chryselys</span>
+    <div class="navbar-divider"></div>
+    <div>
+      <div class="navbar-title">ForecastIQ &thinsp;|&thinsp; Prompt Studio</div>
+    </div>
+  </div>
+  <div class="navbar-right">
+    <a href="/" class="navbar-back-btn">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back to App
+    </a>
+    <div class="profile-chip">
+      <img src="image.webp" alt="Chryselys" onerror="this.style.display='none'">
+    </div>
+  </div>
+</nav>
+
+<!-- ── Studio shell ── -->
+<div class="studio-shell">
+
+  <!-- ═══ Left: Prompt List ═══ -->
+  <aside class="prompt-sidebar">
+    <div class="sidebar-header">
+      <h3>Agent Prompts</h3>
+    </div>
+    <div class="sidebar-list" id="sidebarList">
+      <div style="padding:20px 16px; text-align:center; color:var(--text-2); font-size:12px;">
+        Loading prompts...
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ Center: Editor ═══ -->
+  <main class="editor-area">
+    <!-- Top bar -->
+    <div class="editor-topbar" id="editorTopbar">
+      <div class="editor-topbar-left">
+        <div class="editor-prompt-name" id="editorPromptName">Select a prompt</div>
+        <div class="editor-prompt-desc" id="editorPromptDesc">Choose a prompt from the sidebar to start editing</div>
+      </div>
+      <div class="editor-topbar-actions" id="editorActions" style="display:none;">
+        <div class="live-indicator" id="liveIndicator">
+          <div class="live-dot"></div> Live
+        </div>
+        <div class="draft-indicator" id="draftIndicator" style="display:none;">
+          <div class="draft-dot"></div> Draft unsaved
+        </div>
+        <button class="btn btn-outline" id="btnDiscard" onclick="discardDraft()" style="display:none;">Discard</button>
+        <button class="btn btn-draft" id="btnSaveDraft" onclick="saveDraft()">Save Draft</button>
+        <button class="btn btn-publish" id="btnPublish" onclick="openPublishModal()" disabled>Publish Live</button>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="editor-tab-bar">
+      <div class="editor-tab active" id="tabSystem" onclick="switchEditorTab('system')">System Instructions</div>
+      <div class="editor-tab" id="tabTemplate" onclick="switchEditorTab('template')">User Template</div>
+      <div class="editor-tab editor-tab-schema" id="tabSchema" onclick="switchEditorTab('schema')">
+        <svg class="editor-tab-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Output Schema
+      </div>
+    </div>
+
+    <!-- Editor body -->
+    <div class="editor-body">
+      <!-- Variable legend -->
+      <div class="var-legend" id="varLegend" style="display:none;">
+        <div class="var-legend-title">Available Variables<span class="var-legend-hint" id="varLegendHint"></span></div>
+        <div class="var-chips" id="varChips"></div>
+      </div>
+      <!-- System textarea -->
+      <textarea class="prompt-textarea" id="systemEditor" placeholder="Select a prompt to start editing..."
+        oninput="onEditorChange()"></textarea>
+      <!-- Template textarea -->
+      <textarea class="prompt-textarea" id="templateEditor" placeholder="User template with {variables}..."
+        style="display:none;" oninput="onEditorChange()"></textarea>
+      <!-- Output schema viewer (shown on Output Schema tab) -->
+      <div class="schema-viewer" id="schemaViewer"></div>
+      <!-- Locked output schema hint (shown below User Template textarea) -->
+      <div class="locked-schema-panel" id="lockedSchemaPanel" style="display:none;">
+        <div class="locked-schema-header">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Server-enforced Output Schema — read only
+        </div>
+        <div class="locked-schema-body" id="lockedSchemaBody"></div>
+      </div>
+    </div>
+
+    <div class="editor-footer">
+      <span class="editor-footer-meta" id="editorMeta">No prompt loaded</span>
+      <span class="editor-footer-meta" id="charCount"></span>
+    </div>
+  </main>
+
+  <!-- ═══ Right: Test Panel ═══ -->
+  <aside class="test-panel">
+    <div class="test-panel-header">
+      <h3>Test &amp; Preview</h3>
+      <span id="testPromptLabel" style="font-size:11px; color:var(--text-2);">No prompt selected</span>
+    </div>
+
+    <div class="test-panel-body" id="testPanelBody">
+
+      <!-- ══ SHARED: Product Context (shown for Step 2 AND Step 3) ══ -->
+      <div id="ctxProductInfo" class="test-section" style="display:none;">
+        <div class="test-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Product Context</span>
+          <span style="font-size:9px;color:var(--steel);font-weight:500;text-transform:uppercase;letter-spacing:.5px;">Shared · Flow &amp; Assumptions</span>
+        </div>
+        <div class="test-field">
+          <label>Indication <span class="required-star">*</span></label>
+          <input id="fIndication" placeholder="e.g. Non-small cell lung cancer (NSCLC)"
+            oninput="clearFieldError('fIndication')">
+          <div class="field-error-msg" id="err-fIndication">Indication is required</div>
+        </div>
+        <div class="test-field">
+          <label>Product Name <span class="required-star">*</span></label>
+          <input id="fProduct" placeholder="e.g. TUB-040"
+            oninput="clearFieldError('fProduct')">
+          <div class="field-error-msg" id="err-fProduct">Product name is required</div>
+        </div>
+        <div class="test-field">
+          <label>Drug Class / MoA <span class="required-star">*</span></label>
+          <input id="fDrugClass" placeholder="e.g. Antibody-Drug Conjugate (ADC)"
+            oninput="clearFieldError('fDrugClass')">
+          <div class="field-error-msg" id="err-fDrugClass">Drug class / MoA is required</div>
+        </div>
+        <div class="test-field">
+          <label>Country</label>
+          <select id="fCountry">
+            <option value="United States">United States</option>
+            <option value="Germany">Germany</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="France">France</option>
+            <option value="Japan">Japan</option>
+            <option value="China">China</option>
+            <option value="Canada">Canada</option>
+            <option value="Italy">Italy</option>
+            <option value="Spain">Spain</option>
+          </select>
+        </div>
+        <div class="test-field test-field-row">
+          <div>
+            <label>Launch Year</label>
+            <input id="fLaunch" type="number" value="2025" min="2024" max="2040">
+          </div>
+          <div>
+            <label>End Year</label>
+            <input id="fPeak" type="number" value="2035" min="2025" max="2045">
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Step 2 (Flow): optional instructions ── -->
+      <div id="ctxFlow" class="test-section" style="display:none;">
+        <div class="test-section-title">Additional Instructions <span style="font-weight:400;color:var(--steel);">(optional)</span></div>
+        <div class="test-field">
+          <textarea id="fQuery" placeholder="e.g. add a compliance rate parameter, split severity into mild/moderate/severe…" style="min-height:70px;"></textarea>
+        </div>
+        <div style="font-size:10px;color:var(--text-2);line-height:1.5;margin-top:-4px;">
+          Mention any custom parameters you need — the agent will create them if they're not in the standard list.
+        </div>
+      </div>
+
+      <!-- ── Step 3 (Assumptions): flow structure + query + resources ── -->
+      <div id="ctxAssumptions" style="display:none;">
+
+        <!-- Flow structure from Step 2 -->
+        <div class="test-section" id="flowStructSection">
+          <div class="test-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Flow Structure <span style="font-weight:400;color:var(--text-2);">(from Step 2)</span></span>
+            <button class="btn-add-resource" onclick="clearFlowStructure()" style="font-size:9px;">Clear</button>
+          </div>
+          <div id="flowStructStatus" style="font-size:11px;color:var(--text-2);margin-bottom:6px;">
+            Not populated yet — run the <strong>Flow Generation</strong> prompt first, or paste JSON below.
+          </div>
+          <textarea id="flowStructInput" placeholder="Paste flow structure JSON here (optional)…"
+            style="min-height:55px;font-family:'JetBrains Mono',monospace;font-size:10px;resize:vertical;"
+            oninput="onFlowStructChange()" class="prompt-textarea"></textarea>
+        </div>
+
+        <!-- Additional instructions -->
+        <div class="test-section">
+          <div class="test-section-title">Additional Instructions / Overrides</div>
+          <div class="test-field">
+            <textarea id="aQuery" placeholder="e.g. 15-year forecast, gross price $40,000, diagnosis rate 80%…"></textarea>
+          </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="test-section">
+          <div class="test-section-title">Resources</div>
+          <div class="resource-list" id="resourceList"></div>
+          <div class="resource-add-bar">
+            <input id="urlInput" placeholder="Paste URL…" type="url">
+            <button class="btn-add-resource" onclick="addUrlResource()">+ URL</button>
+          </div>
+          <div class="resource-add-bar">
+            <input id="textInput" placeholder="Paste note or benchmark data…">
+            <button class="btn-add-resource" onclick="addTextResource()">+ Note</button>
+          </div>
+          <div class="file-drop-zone" id="dropZone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+            <input type="file" id="fileInput" onchange="onFileSelect(event)" accept=".txt,.pdf,.csv,.json,.md">
+            <div class="file-drop-zone-text">
+              <strong>Upload file</strong> or drag &amp; drop &nbsp;·&nbsp; .txt .csv .json .md .pdf
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Generic context (other prompts) ── -->
+      <div id="ctxGeneric" class="test-section" style="display:none;">
+        <div class="test-section-title">Test Input</div>
+        <div class="test-field">
+          <label>Query / Input</label>
+          <textarea id="gQuery" placeholder="Enter test input for this prompt…" style="min-height:100px;"></textarea>
+        </div>
+      </div>
+
+      <!-- ── Empty state ── -->
+      <div id="ctxEmpty" class="test-section" style="text-align:center;padding:30px 16px;color:var(--text-2);font-size:12px;">
+        Select a prompt from the sidebar to configure the test panel.
+      </div>
+
+    </div><!-- end test-panel-body -->
+
+    <!-- Run button (always visible, outside scroll area) -->
+    <div class="test-run-area">
+      <button type="button" class="btn-run" id="btnRunTest" onclick="runTest()" disabled>
+        <div class="spinner" id="testSpinner"></div>
+        <span id="runBtnLabel">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run Test
+        </span>
+      </button>
+    </div>
+
+    <!-- Preview area (always visible, takes remaining height) -->
+    <div class="preview-area">
+      <div class="preview-tab-bar">
+        <div class="preview-tab-bar-left">
+          <div class="preview-tab active" id="pvTabVisual" onclick="switchPreviewTab('visual')">Visual</div>
+          <div class="preview-tab" id="pvTabJson" onclick="switchPreviewTab('json')">JSON</div>
+          <div class="preview-tab" id="pvTabRaw" onclick="switchPreviewTab('raw')">Raw</div>
+        </div>
+        <div id="pvDownloadBar" style="display:none;gap:6px;align-items:center;"></div>
+      </div>
+      <div class="preview-content" id="pvContent">
+        <div class="preview-placeholder">
+          <div class="preview-placeholder-icon">⚗️</div>
+          <div class="preview-placeholder-text">Run a test to see the output here</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- ── Publish Modal ── -->
+<div class="modal-backdrop" id="publishModal">
+  <div class="modal">
+    <h3>Publish to Live?</h3>
+    <p>This will overwrite the active prompt used by the agent. A timestamped backup will be saved automatically.<br><br>
+    Make sure you've tested your changes before publishing.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closePublishModal()">Cancel</button>
+      <button class="btn btn-publish" onclick="publishPrompt()">Publish Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast container ── -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────
+let _prompts = [];            // all prompt metadata from /api/prompts
+let _selected = null;         // currently selected prompt name
+let _lockedSchemas = {};      // server-enforced output schemas keyed by test_type
+let _liveData = null;         // {system_prompt, user_template} from server
+let _draftData = null;        // {system_prompt, user_template} from server (if draft)
+let _hasDraft = false;
+let _editorTab = 'system';    // 'system' | 'template'
+let _previewTab = 'visual';   // 'visual' | 'json' | 'raw'
+let _lastResult = null;       // last test result
+let _resources = [];          // [{id, type, name, content}]
+let _dirty = false;           // unsaved editor changes
+let _sessionFlowResult = null; // parsed funnel from the last Step 2 test run
+
+// ─────────────────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadPromptList();
+});
+
+async function loadPromptList() {
+  try {
+    const [r, rs] = await Promise.all([
+      fetch('/api/prompts'),
+      fetch('/api/prompts/locked-schema'),
+    ]);
+    const data = await r.json();
+    _prompts = data.prompts || [];
+    if (rs.ok) _lockedSchemas = await rs.json();
+    renderSidebar();
+  } catch(e) {
+    document.getElementById('sidebarList').innerHTML =
+      '<div style="padding:16px; color:var(--danger); font-size:12px;">Failed to load prompts</div>';
+  }
+}
+
+function renderSidebar() {
+  const featured = _prompts.filter(p => p.featured).sort((a, b) => (a.step || 99) - (b.step || 99));
+  const others   = _prompts.filter(p => !p.featured);
+  let html = '';
+
+  if (featured.length) {
+    html += '<div class="sidebar-group-label">Featured</div>';
+    featured.forEach(p => { html += promptItemHTML(p); });
+  }
+  if (others.length) {
+    html += '<div class="sidebar-group-label">All Prompts</div>';
+    others.forEach(p => { html += promptItemHTML(p); });
+  }
+  document.getElementById('sidebarList').innerHTML = html;
+}
+
+const _TYPE_BADGE = { flow: 'Flow', assumptions: 'Assumptions' };
+const _TYPE_ICON  = { flow: '⇢', assumptions: '⊙' };
+
+function promptItemHTML(p) {
+  const icon = _TYPE_ICON[p.test_type] || p.name.charAt(0).toUpperCase();
+  const typeBadge = _TYPE_BADGE[p.test_type] || (p.step ? `Step ${p.step}` : '');
+  const featuredClass = p.featured ? 'featured' : '';
+  const activeClass = p.name === _selected ? 'active' : '';
+  return `
+    <div class="prompt-item ${featuredClass} ${activeClass}" id="item-${p.name}" onclick="selectPrompt('${p.name}')">
+      <div class="prompt-item-icon">${icon}</div>
+      <div class="prompt-item-body">
+        <div class="prompt-item-label">${p.label}</div>
+        <div class="prompt-item-desc">${p.description}</div>
+        <div class="prompt-item-badges">
+          ${typeBadge ? `<span class="badge badge-step">${typeBadge}</span>` : ''}
+          ${p.has_draft ? `<span class="badge badge-draft">Draft</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Select prompt
+// ─────────────────────────────────────────────────────────────────────
+async function selectPrompt(name) {
+  if (_selected === name) return;
+  _selected = name;
+  _dirty = false;
+  _lastResult = null;
+  _resources = [];
+  renderResourceList();
+
+  // Update sidebar active state
+  document.querySelectorAll('.prompt-item').forEach(el => el.classList.remove('active'));
+  const item = document.getElementById(`item-${name}`);
+  if (item) item.classList.add('active');
+
+  // Fetch prompt data
+  try {
+    const r = await fetch(`/api/prompts/${name}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    _liveData  = data.live;
+    _draftData = data.draft;
+    _hasDraft  = data.has_draft;
+
+    const meta = _prompts.find(p => p.name === name) || {};
+
+    // Populate editor
+    const activeData = _hasDraft ? _draftData : _liveData;
+    document.getElementById('systemEditor').value   = activeData.system_prompt || '';
+    document.getElementById('templateEditor').value = activeData.user_template || '';
+
+    // Update topbar
+    document.getElementById('editorPromptName').textContent = meta.label || name;
+    document.getElementById('editorPromptDesc').textContent = meta.description || '';
+    document.getElementById('editorActions').style.display = 'flex';
+
+    // Draft indicators
+    updateDraftIndicators();
+    updateLockedSchemaPanel();
+
+    // Variables — rendered dynamically by updateVarChips()
+    updateVarChips();
+
+    // Switch to system tab by default
+    switchEditorTab('system');
+    updateCharCount();
+    updateEditorMeta(meta, data);
+
+    // Configure test panel
+    configureTestPanel(meta);
+
+  } catch(e) {
+    toast('Failed to load prompt: ' + e.message, 'error');
+  }
+}
+
+function updateDraftIndicators() {
+  const li = document.getElementById('liveIndicator');
+  const di = document.getElementById('draftIndicator');
+  const btnPublish = document.getElementById('btnPublish');
+  const btnDiscard = document.getElementById('btnDiscard');
+
+  if (_hasDraft || _dirty) {
+    di.style.display = 'flex';
+    li.style.display = 'none';
+    btnPublish.disabled = !_hasDraft;
+    // Show Discard for saved drafts, "Reset" for local unsaved edits
+    btnDiscard.style.display = 'inline-flex';
+    btnDiscard.textContent = _hasDraft ? 'Discard Draft' : 'Reset to Live';
+  } else {
+    di.style.display = 'none';
+    li.style.display = 'flex';
+    btnPublish.disabled = true;
+    btnDiscard.style.display = 'none';
+  }
+}
+
+function updateEditorMeta(meta, data) {
+  const rawTs = data.last_modified || '';
+  const d = rawTs ? new Date(rawTs) : null;
+  const ts = (d && !isNaN(d)) ? d.toLocaleString() : '—';
+  document.getElementById('editorMeta').textContent =
+    `${meta.name || ''} · Last modified ${ts}${_hasDraft ? ' · Draft exists' : ''}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Editor interactions
+// ─────────────────────────────────────────────────────────────────────
+function switchEditorTab(tab) {
+  _editorTab = tab;
+  const isSchema = tab === 'schema';
+  document.getElementById('tabSystem').classList.toggle('active', tab === 'system');
+  document.getElementById('tabTemplate').classList.toggle('active', tab === 'template');
+  document.getElementById('tabSchema').classList.toggle('active', isSchema);
+  document.getElementById('systemEditor').style.display   = tab === 'system'   ? 'block' : 'none';
+  document.getElementById('templateEditor').style.display = tab === 'template' ? 'block' : 'none';
+  const sv = document.getElementById('schemaViewer');
+  sv.classList.toggle('visible', isSchema);
+  if (isSchema) renderSchemaTab();
+  if (!isSchema) updateCharCount();
+  updateLockedSchemaPanel();
+  updateVarChips();
+}
+
+function renderSchemaTab() {
+  const viewer = document.getElementById('schemaViewer');
+  if (!viewer) return;
+  const meta   = _prompts.find(p => p.name === _selected) || {};
+  const schema = _lockedSchemas[meta.test_type];
+  if (!schema) {
+    viewer.innerHTML = '<div class="schema-viewer-empty">No locked output schema for this prompt type.</div>';
+    return;
+  }
+  viewer.innerHTML = `
+    <div class="schema-viewer-note">
+      This output schema is <strong>always appended</strong> to the user message by the server and
+      cannot be edited in the prompt. Your system and user templates shape the agent's reasoning —
+      the final JSON answer must always match this format exactly.
+    </div>
+    <pre class="schema-viewer-pre">${escHtml(schema)}</pre>`;
+}
+
+function updateLockedSchemaPanel() {
+  const panel = document.getElementById('lockedSchemaPanel');
+  const body  = document.getElementById('lockedSchemaBody');
+  const schemaTab = document.getElementById('tabSchema');
+  if (!panel || !body) return;
+  const meta   = _prompts.find(p => p.name === _selected) || {};
+  const schema = _lockedSchemas[meta.test_type];
+
+  // Show/hide the Output Schema tab based on whether this prompt type has a locked schema
+  if (schemaTab) schemaTab.style.display = schema ? 'block' : 'none';
+
+  // If we're hiding the schema tab while it's active, fall back to system tab
+  if (!schema && _editorTab === 'schema') {
+    switchEditorTab('system');
+    return;
+  }
+
+  // Show the inline hint panel only on the User Template tab
+  const onTemplateTab = (_editorTab === 'template');
+  if (schema && onTemplateTab) {
+    body.textContent = schema;
+    panel.style.display = 'block';
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function updateVarChips() {
+  const legend = document.getElementById('varLegend');
+  const chips  = document.getElementById('varChips');
+  const title  = legend?.querySelector('.var-legend-title');
+  if (!legend || !chips) return;
+
+  if (_editorTab === 'schema') {
+    legend.style.display = 'none';
+    return;
+  }
+
+  const meta      = _prompts.find(p => p.name === _selected) || {};
+  const knownVars = new Set(meta.variables || []);
+
+  // Variables already present in the saved (live) prompt are intentional — treat as known
+  if (_liveData) {
+    const liveText = (_liveData.system_prompt || '') + '\n' + (_liveData.user_template || '');
+    for (const m of liveText.matchAll(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g)) knownVars.add(m[1]);
+  }
+
+  const hint = document.getElementById('varLegendHint');
+
+  // Scan BOTH textareas so variables stay in sync regardless of active tab
+  const systemText   = document.getElementById('systemEditor')?.value   || '';
+  const templateText = document.getElementById('templateEditor')?.value || '';
+  const combined     = systemText + '\n' + templateText;
+  const found = [...new Set([...combined.matchAll(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g)].map(m => m[1]))];
+
+  function chipHTML(v, known) {
+    const cls = known ? 'var-chip' : 'var-chip var-chip-unknown';
+    const tip = known
+      ? 'Click to insert at cursor'
+      : 'Not a server-substituted variable — will be sent as literal text. Click to insert.';
+    return `<span class="${cls}" title="${tip}" onclick="insertVar('${v}')">{${escHtml(v)}}</span>`;
+  }
+
+  if (found.length) {
+    legend.style.display = 'block';
+    if (title) title.textContent = 'Variables in use';
+    if (hint) hint.textContent = '· click to insert';
+    const hasUnknown = found.some(v => !knownVars.has(v));
+    chips.innerHTML = found.map(v => chipHTML(v, knownVars.has(v))).join('');
+    // Append legend for unknown vars if any exist
+    if (hasUnknown) {
+      chips.innerHTML += `<span style="font-size:9px;color:var(--steel);align-self:center;margin-left:4px;">
+        <span style="color:var(--gold);">■</span> not substituted by server</span>`;
+    }
+  } else {
+    // Fallback: static list from server metadata — clickable shortcuts
+    if (knownVars.size) {
+      legend.style.display = 'block';
+      if (title) title.textContent = 'Available Variables';
+      if (hint) hint.textContent = '· click to insert';
+      chips.innerHTML = [...knownVars].map(v => chipHTML(v, true)).join('');
+    } else {
+      legend.style.display = 'none';
+    }
+  }
+}
+
+function insertVar(name) {
+  if (_editorTab === 'schema') return;
+  const taId = _editorTab === 'template' ? 'templateEditor' : 'systemEditor';
+  const ta = document.getElementById(taId);
+  if (!ta) return;
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  const insertion = '{' + name + '}';
+  ta.value = ta.value.slice(0, start) + insertion + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + insertion.length;
+  ta.focus();
+  onEditorChange();
+}
+
+
+function onEditorChange() {
+  _dirty = true;
+  updateCharCount();
+  updateVarChips();
+  // Enable save draft immediately
+  document.getElementById('draftIndicator').style.display = 'flex';
+  document.getElementById('liveIndicator').style.display = 'none';
+}
+
+function updateCharCount() {
+  const ta = _editorTab === 'system'
+    ? document.getElementById('systemEditor')
+    : document.getElementById('templateEditor');
+  const chars = ta.value.length;
+  const words = ta.value.split(/\s+/).filter(Boolean).length;
+  document.getElementById('charCount').textContent = `${chars.toLocaleString()} chars · ${words.toLocaleString()} words`;
+}
+
+function getEditorContent() {
+  return {
+    system_prompt: document.getElementById('systemEditor').value,
+    user_template: document.getElementById('templateEditor').value,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Save / Publish / Discard
+// ─────────────────────────────────────────────────────────────────────
+async function saveDraft() {
+  if (!_selected) return;
+  const btn = document.getElementById('btnSaveDraft');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    const { system_prompt, user_template } = getEditorContent();
+    const r = await fetch(`/api/prompts/${_selected}/draft`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system_prompt, user_template }),
+    });
+    if (!r.ok) throw new Error(await r.text());
+    _hasDraft = true;
+    _draftData = { system_prompt, user_template };
+    _dirty = false;
+    updateDraftIndicators();
+    // Update sidebar badge
+    loadPromptList().then(() => {
+      document.querySelectorAll('.prompt-item').forEach(el => el.classList.remove('active'));
+      const item = document.getElementById(`item-${_selected}`);
+      if (item) item.classList.add('active');
+    });
+    toast('Draft saved', 'success');
+  } catch(e) {
+    toast('Failed to save draft: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Draft';
+  }
+}
+
+function openPublishModal() {
+  document.getElementById('publishModal').classList.add('open');
+}
+function closePublishModal() {
+  document.getElementById('publishModal').classList.remove('open');
+}
+
+async function publishPrompt() {
+  closePublishModal();
+  if (!_selected) return;
+  try {
+    const r = await fetch(`/api/prompts/${_selected}/publish`, { method: 'POST' });
+    if (!r.ok) throw new Error(await r.text());
+    const d = await r.json();
+    _hasDraft = false;
+    _liveData = _draftData;
+    _draftData = null;
+    updateDraftIndicators();
+    loadPromptList().then(() => {
+      document.querySelectorAll('.prompt-item').forEach(el => el.classList.remove('active'));
+      const item = document.getElementById(`item-${_selected}`);
+      if (item) item.classList.add('active');
+    });
+    toast('Prompt published to live ✓', 'success');
+    setTimeout(() => window.location.reload(), 1200);
+  } catch(e) {
+    toast('Publish failed: ' + e.message, 'error');
+  }
+}
+
+async function discardDraft() {
+  if (!_selected) return;
+  if (!_hasDraft && !_dirty) return;
+  const hadDraft = _hasDraft;
+  if (hadDraft) {
+    if (!confirm('Discard the draft and revert to the live version?')) return;
+    try {
+      const r = await fetch(`/api/prompts/${_selected}/draft`, { method: 'DELETE' });
+      if (!r.ok) throw new Error(await r.text());
+    } catch(e) {
+      toast('Failed to discard: ' + e.message, 'error');
+      return;
+    }
+    _hasDraft = false;
+    _draftData = null;
+    loadPromptList();
+  }
+  _dirty = false;
+  document.getElementById('systemEditor').value   = _liveData.system_prompt || '';
+  document.getElementById('templateEditor').value = _liveData.user_template || '';
+  updateDraftIndicators();
+  updateCharCount();
+  toast(hadDraft ? 'Draft discarded' : 'Reset to live version', 'warning');
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Test panel
+// ─────────────────────────────────────────────────────────────────────
+function configureTestPanel(meta) {
+  const testType = meta.test_type || 'generic';
+  const isSteppedPrompt = testType === 'flow' || testType === 'assumptions';
+
+  // Shared product context: visible for both Step 2 (flow) and Step 3 (assumptions)
+  document.getElementById('ctxProductInfo').style.display = isSteppedPrompt ? 'block' : 'none';
+
+  // Step-specific panels
+  document.getElementById('ctxFlow').style.display        = testType === 'flow'        ? 'block' : 'none';
+  document.getElementById('ctxAssumptions').style.display = testType === 'assumptions' ? 'block' : 'none';
+  document.getElementById('ctxGeneric').style.display     = testType === 'generic'     ? 'block' : 'none';
+  document.getElementById('ctxEmpty').style.display       = 'none';
+
+  // When switching to assumptions, refresh the flow structure display
+  if (testType === 'assumptions') {
+    updateFlowStructDisplay();
+  }
+
+  document.getElementById('btnRunTest').disabled = false;
+  document.getElementById('testPromptLabel').textContent = meta.label || _selected;
+  setPreviewPlaceholder();
+}
+
+// ── Flow structure helpers (Step 3 panel) ────────────────────────────
+
+function updateFlowStructDisplay() {
+  const status = document.getElementById('flowStructStatus');
+  const input  = document.getElementById('flowStructInput');
+  if (!status || !input) return;
+  if (_sessionFlowResult) {
+    status.innerHTML =
+      '<span style="color:var(--success);font-weight:600;">&#10003; Auto-populated from last Step 2 run</span>';
+    input.value = JSON.stringify(_sessionFlowResult, null, 2);
+  } else {
+    status.innerHTML =
+      'Not populated yet — run the <strong>Flow Generation</strong> prompt first, or paste JSON below.';
+  }
+}
+
+function clearFlowStructure() {
+  _sessionFlowResult = null;
+  const input = document.getElementById('flowStructInput');
+  if (input) input.value = '';
+  const status = document.getElementById('flowStructStatus');
+  if (status) status.innerHTML =
+    'Not populated yet — run the <strong>Flow Generation</strong> prompt first, or paste JSON below.';
+}
+
+function onFlowStructChange() {
+  // If the user clears the textarea, clear the session flow too
+  const val = document.getElementById('flowStructInput')?.value?.trim();
+  if (!val) _sessionFlowResult = null;
+}
+
+function getFlowStructure() {
+  // Prefer the textarea value so manual edits are respected; fall back to session result
+  const val = document.getElementById('flowStructInput')?.value?.trim();
+  if (val) {
+    try { return JSON.parse(val); } catch { /* invalid JSON in textarea — fall through */ }
+  }
+  return _sessionFlowResult || null;
+}
+
+function passFlowToAssumptions() {
+  if (!_lastResult?.parsed) {
+    toast('Run the Flow test first to generate a funnel structure', 'warning');
+    return;
+  }
+  _sessionFlowResult = _lastResult.parsed;
+  const assmPrompt = _prompts.find(p => p.test_type === 'assumptions');
+  if (assmPrompt) {
+    selectPrompt(assmPrompt.name);
+    toast('Flow structure passed to Step 3 ✓', 'success');
+  } else {
+    toast('Flow structure saved — switch to the Assumptions prompt to use it', 'success');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Resources
+// ─────────────────────────────────────────────────────────────────────
+function addUrlResource() {
+  const input = document.getElementById('urlInput');
+  const raw = input.value.trim();
+  if (!raw) return;
+  // Accept bare domains like "seer.cancer.gov/…" by prepending https://
+  const url = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+  try { new URL(url); } catch {
+    toast('Invalid URL — please include the full address', 'warning');
+    return;
+  }
+  let displayName;
+  try { displayName = new URL(url).hostname.replace(/^www\./, ''); } catch { displayName = url; }
+  _resources.push({ id: Date.now(), type: 'url', name: displayName, content: url });
+  input.value = '';
+  renderResourceList();
+}
+
+function addTextResource() {
+  const input = document.getElementById('textInput');
+  const text = input.value.trim();
+  if (!text) return;
+  _resources.push({ id: Date.now(), type: 'text', name: 'Note', content: text });
+  input.value = '';
+  renderResourceList();
+}
+
+function onDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragover'); }
+function onDragLeave(e) { document.getElementById('dropZone').classList.remove('dragover'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length) handleFileUpload(files[0]);
+}
+function onFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) handleFileUpload(file);
+  e.target.value = '';
+}
+
+async function handleFileUpload(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const r = await fetch('/api/prompts/upload-resource', { method: 'POST', body: formData });
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    _resources.push({ id: Date.now(), type: 'file', name: data.name, content: data.content });
+    renderResourceList();
+    toast(`File "${data.name}" added`, 'success');
+  } catch(e) {
+    toast('Upload failed: ' + e.message, 'error');
+  }
+}
+
+function removeResource(id) {
+  _resources = _resources.filter(r => r.id !== id);
+  renderResourceList();
+}
+
+function renderResourceList() {
+  const list = document.getElementById('resourceList');
+  if (!list) return;
+  if (!_resources.length) { list.innerHTML = ''; return; }
+  list.innerHTML = _resources.map(r => {
+    const preview = r.type === 'url'
+      ? `<span style="color:var(--primary);font-size:10px;">${escHtml(r.content)}</span>`
+      : escHtml((r.content || '').substring(0, 80)) + ((r.content || '').length > 80 ? '…' : '');
+    return `
+    <div class="resource-card">
+      <div class="resource-type-icon ${r.type}">${r.type === 'url' ? '🔗' : r.type === 'file' ? '📄' : '📝'}</div>
+      <div class="resource-card-body">
+        <div class="resource-card-name">${escHtml(r.name)}</div>
+        <div class="resource-card-preview">${preview}</div>
+      </div>
+      <button type="button" class="resource-remove" onclick="removeResource(${r.id})" title="Remove">×</button>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Run Test
+// ─────────────────────────────────────────────────────────────────────
+
+// Read shared product context fields (used by both flow and assumptions)
+function getProductContext() {
+  return {
+    indication:   document.getElementById('fIndication')?.value || '',
+    product_name: document.getElementById('fProduct')?.value    || '',
+    drug_class:   document.getElementById('fDrugClass')?.value  || '',
+    country:      document.getElementById('fCountry')?.value    || 'United States',
+    launch_year:  parseInt(document.getElementById('fLaunch')?.value)  || 2025,
+    peak_year:    parseInt(document.getElementById('fPeak')?.value)    || 2035,
+  };
+}
+
+function clearFieldError(id) {
+  document.getElementById(id)?.classList.remove('field-invalid');
+  const err = document.getElementById('err-' + id);
+  if (err) err.classList.remove('visible');
+}
+
+function validateProductContext() {
+  const required = [
+    { id: 'fIndication', label: 'Indication' },
+    { id: 'fProduct',    label: 'Product Name' },
+    { id: 'fDrugClass',  label: 'Drug Class / MoA' },
+  ];
+  let valid = true;
+  required.forEach(({ id }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.value.trim()) {
+      el.classList.add('field-invalid');
+      const err = document.getElementById('err-' + id);
+      if (err) err.classList.add('visible');
+      valid = false;
+    }
+  });
+  if (!valid) {
+    // Scroll the product context section into view
+    document.getElementById('ctxProductInfo')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  return valid;
+}
+
+async function runTest() {
+  if (!_selected) return;
+  const meta = _prompts.find(p => p.name === _selected) || {};
+  const testType = meta.test_type || 'generic';
+
+  // Validate product context for flow and assumptions tests
+  if (testType === 'flow' || testType === 'assumptions') {
+    if (!validateProductContext()) return;
+  }
+
+  const { system_prompt, user_template } = getEditorContent();
+  const productCtx = getProductContext();
+
+  setLoading(true);
+  try {
+    let body, endpoint;
+
+    if (testType === 'flow') {
+      endpoint = '/api/prompts/test/flow';
+      body = { system_prompt, user_template, ...productCtx,
+               query: document.getElementById('fQuery')?.value || '' };
+
+    } else if (testType === 'assumptions') {
+      endpoint = '/api/prompts/test/assumptions';
+      body = {
+        system_prompt,
+        user_template,
+        query: document.getElementById('aQuery').value,
+        resources: _resources.map(r => ({ type: r.type, content: r.content, name: r.name })),
+        // Pass shared product context — same fields as flow
+        ...productCtx,
+        // Pass funnel structure from Step 2 (auto or manual)
+        funnel_structure: getFlowStructure(),
+      };
+
+    } else {
+      endpoint = '/api/prompts/test/generic';
+      body = { system_prompt, user_template, query: document.getElementById('gQuery').value };
+    }
+
+    const r = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || JSON.stringify(data));
+
+    _lastResult = { ...data, testType, contextUsed: productCtx, queryUsed: body.query || '' };
+
+    // After a successful flow test, store the funnel for Step 3 to pick up
+    if (testType === 'flow' && data.parsed) {
+      _sessionFlowResult = data.parsed;
+    }
+
+    renderPreview();
+  } catch(e) {
+    document.getElementById('pvContent').innerHTML =
+      `<div class="error-box"><strong>Error:</strong> ${escHtml(e.message)}</div>`;
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('btnRunTest');
+  const spinner = document.getElementById('testSpinner');
+  const label = document.getElementById('runBtnLabel');
+  btn.disabled = on;
+  spinner.style.display = on ? 'block' : 'none';
+  label.style.display = on ? 'none' : 'flex';
+  if (on) {
+    document.getElementById('pvContent').innerHTML =
+      '<div class="loading-box"><div class="loading-spinner-sm"></div> Running test — this may take a moment…</div>';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Preview rendering
+// ─────────────────────────────────────────────────────────────────────
+function switchPreviewTab(tab) {
+  _previewTab = tab;
+  ['visual','json','raw'].forEach(t => {
+    document.getElementById(`pvTab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === tab);
+  });
+  if (_lastResult) renderPreview();
+}
+
+function setPreviewPlaceholder() {
+  document.getElementById('pvContent').innerHTML = `
+    <div class="preview-placeholder">
+      <div class="preview-placeholder-icon">⚗️</div>
+      <div class="preview-placeholder-text">Run a test to see the output here</div>
+    </div>`;
+}
+
+function renderPreview() {
+  if (!_lastResult) return;
+  const { testType, parsed, raw, readable, csv } = _lastResult;
+  const container = document.getElementById('pvContent');
+
+  // Show/hide download bar for assumptions results
+  const dlBar = document.getElementById('pvDownloadBar');
+  if (dlBar) {
+    if (testType === 'assumptions' && readable && readable.length) {
+      const jsonStr  = JSON.stringify(parsed, null, 2);
+      const jsonB64  = btoa(unescape(encodeURIComponent(jsonStr)));
+      const csvB64   = csv ? btoa(unescape(encodeURIComponent(csv))) : '';
+      dlBar.style.display = 'flex';
+      dlBar.innerHTML =
+        `<a href="data:application/json;base64,${jsonB64}" download="assumptions.json"
+            style="font-size:11px;font-weight:600;color:var(--primary);text-decoration:none;
+                   border:1px solid var(--primary);border-radius:6px;padding:3px 10px;
+                   background:rgba(26,79,114,.07);">↓ JSON</a>` +
+        (csvB64
+          ? `<a href="data:text/csv;base64,${csvB64}" download="assumptions.csv"
+                style="font-size:11px;font-weight:600;color:var(--gold);text-decoration:none;
+                       border:1px solid var(--gold);border-radius:6px;padding:3px 10px;
+                       background:rgba(201,146,42,.07);">↓ CSV</a>`
+          : '');
+    } else {
+      dlBar.style.display = 'none';
+      dlBar.innerHTML = '';
+    }
+  }
+
+  if (_previewTab === 'raw') {
+    container.innerHTML = `<div class="json-view">${escHtml(raw || '')}</div>`;
+    return;
+  }
+  if (_previewTab === 'json') {
+    const display = parsed ?? raw;
+    const json = typeof display === 'object'
+      ? JSON.stringify(display, null, 2)
+      : (display || '(no output)');
+    container.innerHTML = `<div class="json-view">${syntaxHighlight(json)}</div>`;
+    return;
+  }
+
+  // Visual tab
+  if (testType === 'flow') {
+    renderFlowVisual(container, parsed);
+  } else if (testType === 'assumptions') {
+    renderAssumptionsVisual(container, readable, parsed);
+  } else {
+    const display = typeof parsed === 'object' && parsed
+      ? JSON.stringify(parsed, null, 2) : (raw || '(no output)');
+    container.innerHTML = `<div class="json-view">${syntaxHighlight(display)}</div>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Flow Builder constants + state (Step 2 interactive preview)
+// ─────────────────────────────────────────────────────────────────────
+const PS_PARAM_DEFS = {
+  population:          { label: 'Total Population',       desc: 'Overall population of the target country/region', badge: 'required',   cat: 'epi' },
+  prevalence:          { label: 'Prevalence Rate',        desc: 'Stock of living patients with the condition',     badge: 'choose-one', cat: 'epi' },
+  incidence:           { label: 'Incidence Rate',         desc: 'New cases diagnosed per year',                    badge: 'choose-one', cat: 'epi' },
+  severity:            { label: 'Severity / Subtype %',   desc: 'Proportion in the relevant biomarker/stage subgroup', badge: 'optional', cat: 'epi' },
+  diagnosisRate:       { label: 'Diagnosis Rate',         desc: 'Proportion of affected patients clinically identified', badge: 'optional', cat: 'epi' },
+  treatmentRate:       { label: 'Treatment Rate',         desc: 'Proportion of diagnosed patients receiving therapy', badge: 'optional', cat: 'treat' },
+  eligibilityCriteria: { label: 'Eligibility Criteria',   desc: 'Biomarker, line of therapy, or inclusion gate',   badge: 'optional', cat: 'treat' },
+  progressionRate:     { label: 'Progression Rate',       desc: 'Disease progression or line advancement rate',    badge: 'optional', cat: 'treat' },
+  classShare:          { label: 'Peak Class Share',        desc: 'Drug class vs other classes at peak',             badge: 'optional', cat: 'market' },
+  peakProductShare:    { label: 'Peak Product Share',     desc: 'This product within its class at peak',           badge: 'optional', cat: 'market' },
+  annualCostPerPatient:{ label: 'Annual Cost per Patient', desc: 'Gross annual treatment cost',                    badge: 'optional', cat: 'pricing' },
+  discount:            { label: 'Discount / Rebate Rate', desc: 'Net pricing after payer rebates',                 badge: 'optional', cat: 'pricing' },
+};
+
+const PS_PRESETS = {
+  standard: ['population','prevalence','diagnosisRate','treatmentRate','classShare','peakProductShare','annualCostPerPatient','discount'],
+  oncology: ['population','incidence','diagnosisRate','eligibilityCriteria','treatmentRate','classShare','peakProductShare','annualCostPerPatient','discount'],
+  rare:     ['population','prevalence','diagnosisRate','eligibilityCriteria','classShare','peakProductShare','annualCostPerPatient','discount'],
+};
+
+const PS_CATEGORIES = [
+  { id: 'epi',    label: 'Epidemiology',     params: ['population','prevalence','incidence','severity','diagnosisRate'] },
+  { id: 'treat',  label: 'Treatment Flow',   params: ['eligibilityCriteria','treatmentRate','progressionRate'] },
+  { id: 'market', label: 'Market Dynamics',  params: ['classShare','peakProductShare'] },
+  { id: 'pricing',label: 'Pricing & Access', params: ['annualCostPerPatient','discount'] },
+];
+
+const PS_FUNNEL_ORDER = ['population','prevalence','incidence','severity','diagnosisRate',
+  'eligibilityCriteria','treatmentRate','progressionRate','classShare','peakProductShare',
+  'annualCostPerPatient','discount']; // must match AVAILABLE PARAMETERS order in flow_generate prompt
+
+const PS_STEP_ICONS = {
+  population:'🌍', prevalence:'📊', incidence:'📋', severity:'🎯',
+  diagnosisRate:'🏥', eligibilityCriteria:'🔬', treatmentRate:'💊',
+  progressionRate:'📈', classShare:'🏆', peakProductShare:'⭐',
+  annualCostPerPatient:'💰', discount:'🏷️',
+};
+
+const PS_STEP_SHORT = {
+  population:'Population', prevalence:'Prevalence', incidence:'Incidence',
+  severity:'Subtype %', diagnosisRate:'Diagnosed', eligibilityCriteria:'Eligible',
+  treatmentRate:'Treated', progressionRate:'Progression', classShare:'Class Share',
+  peakProductShare:'Prod. Share', annualCostPerPatient:'Cost/Pt', discount:'Net Price',
+};
+
+let _studioParams       = new Set();   // selected param IDs
+let _studioEpiType      = 'prevalence';
+let _studioRationale    = {};
+let _studioCustomParams = {};          // AI-created params: {id: {label, description, category}}
+let _studioAIParsed     = null;        // reference to last parsed result for re-apply
+let _studioParamOrder   = [...PS_FUNNEL_ORDER]; // display order — driven by AI prompt output
+
+// ─────────────────────────────────────────────────────────────────────
+// renderFlowVisual — interactive Step 2 parameter builder
+// ─────────────────────────────────────────────────────────────────────
+function renderFlowVisual(container, parsed) {
+  if (!parsed) {
+    container.innerHTML = '<div class="error-box">No parsed output. Check the JSON tab for the raw response.</div>';
+    return;
+  }
+  if (!parsed.recommended_params) {
+    container.innerHTML = '<div class="error-box">Response missing <code>recommended_params</code>. The prompt may use an older format — check the JSON tab and update the prompt to match the current output schema.</div>';
+    return;
+  }
+
+  _studioAIParsed     = parsed;
+  _studioRationale    = parsed.param_rationale || {};
+  _studioEpiType      = parsed.epi_type || 'prevalence';
+  _studioParams       = new Set(parsed.recommended_params || []);
+  // Only keep custom params not already in the built-in catalogue
+  _studioCustomParams = {};
+  Object.entries(parsed.custom_params || {}).forEach(([id, def]) => {
+    if (!(id in PS_PARAM_DEFS)) _studioCustomParams[id] = def;
+  });
+  _studioParams.add('population');
+  // Capture the AI-recommended order so the funnel diagram reflects it
+  _studioParamOrder = parsed.recommended_params ? [...parsed.recommended_params] : [...PS_FUNNEL_ORDER];
+  if (!_studioParamOrder.includes('population')) _studioParamOrder.unshift('population');
+
+  container.innerHTML = _buildFlowBuilderHTML(parsed);
+  studioUpdateFlowDiagram();
+}
+
+function _buildFlowBuilderHTML(parsed) {
+  const preset    = parsed.preset_match || 'custom';
+  const fa        = parsed.forecast_assumptions || {};
+  const aiText    = parsed.ai_recommendation_text || '';
+  const recommended = [..._studioParams].filter(p => p !== 'population');
+
+  let h = '<div class="ps-flow-container">';
+
+  // ── Product header ─────────────────────────────────────────────────
+  h += `<div>
+    <div style="font-size:13px;font-weight:700;color:var(--text);">
+      ${escHtml(parsed.indication || '')}${parsed.market ? ' · ' + escHtml(parsed.market) : ''}
+    </div>
+    <div style="font-size:11px;color:var(--text-2);margin-top:2px;">
+      ${escHtml(parsed.product || '')}${parsed.drug_class ? ' — ' + escHtml(parsed.drug_class) : ''}
+    </div>
+    ${fa.launch_year ? `<div style="font-size:10px;color:var(--text-2);margin-top:2px;">
+      Forecast: ${fa.launch_year}–${fa.peak_year || '—'} · ${fa.suggested_forecast_period_years || '—'} yrs
+    </div>` : ''}
+  </div>`;
+
+  // ── AI recommendation banner ───────────────────────────────────────
+  if (aiText) {
+    const chips = recommended.map(p => {
+      const def = PS_PARAM_DEFS[p];
+      return `<span class="ps-ai-chip">${escHtml(def ? def.label : p)}</span>`;
+    }).join('');
+    h += `<div class="ps-ai-banner">
+      <div class="ps-ai-icon">🤖</div>
+      <div class="ps-ai-content">
+        <div class="ps-ai-title">AI Recommendation</div>
+        <div class="ps-ai-text">${escHtml(aiText)}</div>
+        ${chips ? `<div class="ps-ai-chips">${chips}</div>` : ''}
+        <span class="ps-ai-apply" onclick="studioApplyAIRecommendation()">✓ Apply AI recommendation</span>
+      </div>
+    </div>`;
+  }
+
+  // ── Market summary ─────────────────────────────────────────────────
+  if (parsed.market_summary) {
+    h += `<div class="ps-market-summary">${escHtml(parsed.market_summary)}</div>`;
+  }
+
+  // ── Preset chips ───────────────────────────────────────────────────
+  const PRESET_LABELS = { standard:'Standard', oncology:'Oncology', rare:'Rare Disease', custom:'Custom' };
+  h += `<div class="ps-presets-bar">
+    <span class="ps-presets-label">Template:</span>
+    ${['standard','oncology','rare','custom'].map(p =>
+      `<span class="ps-preset-chip${p === preset ? ' active' : ''}" id="ps-chip-${p}"
+        onclick="studioApplyPreset('${p}')">${escHtml(PRESET_LABELS[p])}</span>`
+    ).join('')}
+  </div>`;
+
+  // ── Parameter categories ───────────────────────────────────────────
+  PS_CATEGORIES.forEach(cat => {
+    h += `<div class="ps-category">
+      <div class="ps-category-header">
+        <span class="ps-category-title">${escHtml(cat.label)}</span>
+        <button type="button" class="ps-add-btn" onclick="studioShowAddParam('${cat.id}')">+ Add</button>
+      </div>
+      <div class="ps-param-list">`;
+
+    cat.params.forEach(id => {
+      const def = PS_PARAM_DEFS[id];
+      if (!def) return;
+      const isPopulation = id === 'population';
+      const isEpiChoice  = id === 'prevalence' || id === 'incidence';
+      const isChecked    = isPopulation ? true : isEpiChoice ? (_studioEpiType === id) : _studioParams.has(id);
+      const rationale    = _studioRationale[id] || '';
+
+      if (isPopulation) {
+        h += `<div class="ps-param-item ps-disabled">
+          <div class="ps-param-ctrl"><input type="checkbox" checked disabled></div>
+          <div class="ps-param-body">
+            <div class="ps-param-header-row">
+              <span class="ps-param-label">${escHtml(def.label)}</span>
+              <span class="ps-param-badge required">required</span>
+            </div>
+            <div class="ps-param-desc">${escHtml(def.desc)}</div>
+          </div>
+        </div>`;
+      } else if (isEpiChoice) {
+        h += `<div class="ps-param-item" onclick="studioSetEpiType('${id}')">
+          <div class="ps-param-ctrl">
+            <input type="radio" name="ps-epi" value="${id}" ${isChecked ? 'checked' : ''}
+              onclick="event.stopPropagation();studioSetEpiType('${id}')">
+          </div>
+          <div class="ps-param-body">
+            <div class="ps-param-header-row">
+              <span class="ps-param-label">${escHtml(def.label)}</span>
+              <span class="ps-param-badge choose-one">choose one</span>
+            </div>
+            <div class="ps-param-desc">${escHtml(def.desc)}</div>
+            ${rationale ? `<div class="ps-param-rationale">${escHtml(rationale)}</div>` : ''}
+          </div>
+        </div>`;
+      } else {
+        h += `<div class="ps-param-item" onclick="studioToggleParam('${id}')">
+          <div class="ps-param-ctrl">
+            <input type="checkbox" id="ps-cb-${id}" ${isChecked ? 'checked' : ''}
+              onclick="event.stopPropagation();studioToggleParam('${id}')">
+          </div>
+          <div class="ps-param-body">
+            <div class="ps-param-header-row">
+              <span class="ps-param-label">${escHtml(def.label)}</span>
+              <span class="ps-param-badge optional">optional</span>
+            </div>
+            <div class="ps-param-desc">${escHtml(def.desc)}</div>
+            ${rationale ? `<div class="ps-param-rationale">${escHtml(rationale)}</div>` : ''}
+          </div>
+        </div>`;
+      }
+    });
+
+    h += `</div></div>`;
+  });
+
+  // ── AI-created custom parameters ──────────────────────────────────
+  const customIds = Object.keys(_studioCustomParams);
+  if (customIds.length) {
+    h += `<div class="ps-category">
+      <div class="ps-category-header">
+        <span class="ps-category-title">Custom Parameters</span>
+        <span style="font-size:9px;font-weight:700;color:var(--gold);background:rgba(201,146,42,.1);border:1px solid rgba(201,146,42,.2);border-radius:4px;padding:1px 6px;letter-spacing:.3px;">AI-created</span>
+      </div>
+      <div class="ps-param-list">`;
+    customIds.forEach(id => {
+      const def       = _studioCustomParams[id] || {};
+      const isChecked = _studioParams.has(id);
+      const rationale = _studioRationale[id] || '';
+      h += `<div class="ps-param-item" onclick="studioToggleParam('${id}')">
+        <div class="ps-param-ctrl">
+          <input type="checkbox" id="ps-cb-${id}" ${isChecked ? 'checked' : ''}
+            onclick="event.stopPropagation();studioToggleParam('${id}')">
+        </div>
+        <div class="ps-param-body">
+          <div class="ps-param-header-row">
+            <span class="ps-param-label">${escHtml(def.label || id)}</span>
+            <span class="ps-param-badge optional">custom</span>
+          </div>
+          <div class="ps-param-desc">${escHtml(def.description || '')}</div>
+          ${rationale ? `<div class="ps-param-rationale">${escHtml(rationale)}</div>` : ''}
+        </div>
+      </div>`;
+    });
+    h += `</div></div>`;
+  }
+
+  // ── Live flow diagram placeholder ──────────────────────────────────
+  h += `<div id="ps-flow-diagram"></div>`;
+
+  // ── Pass to Step 3 ─────────────────────────────────────────────────
+  h += `<div>
+    <button type="button" onclick="passFlowToAssumptions()"
+      style="width:100%;height:34px;border-radius:var(--r8);border:1.5px solid var(--primary);
+             background:rgba(26,79,114,.06);color:var(--primary);font-size:12px;font-weight:700;
+             cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+      &#8594; Use this flow in Step 3 (Assumptions)
+    </button>
+  </div>`;
+
+  h += '</div>';
+  return h;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Flow builder interaction handlers
+// ─────────────────────────────────────────────────────────────────────
+function studioToggleParam(id) {
+  if (id === 'population') return;
+  if (_studioParams.has(id)) { _studioParams.delete(id); } else { _studioParams.add(id); }
+  const cb = document.getElementById(`ps-cb-${id}`);
+  if (cb) cb.checked = _studioParams.has(id);
+  studioMarkCustomPreset();
+  studioUpdateFlowDiagram();
+}
+
+function studioSetEpiType(type) {
+  _studioEpiType = type;
+  _studioParams.delete('prevalence');
+  _studioParams.delete('incidence');
+  _studioParams.add(type);
+  document.querySelectorAll('input[name="ps-epi"]').forEach(r => { r.checked = r.value === type; });
+  studioMarkCustomPreset();
+  studioUpdateFlowDiagram();
+}
+
+function studioApplyPreset(preset) {
+  const params = PS_PRESETS[preset];
+  if (params) {
+    _studioParams       = new Set(params);
+    _studioEpiType      = params.includes('incidence') ? 'incidence' : 'prevalence';
+    _studioCustomParams = {};  // Standard presets don't include custom params
+    _studioParamOrder   = [...params];
+    Object.keys(PS_PARAM_DEFS).forEach(id => {
+      const cb = document.getElementById(`ps-cb-${id}`);
+      if (cb) cb.checked = _studioParams.has(id);
+    });
+    document.querySelectorAll('input[name="ps-epi"]').forEach(r => { r.checked = r.value === _studioEpiType; });
+    studioUpdateFlowDiagram();
+  }
+  document.querySelectorAll('.ps-preset-chip').forEach(c => {
+    c.classList.toggle('active', c.id === `ps-chip-${preset}`);
+  });
+}
+
+function studioApplyAIRecommendation() {
+  if (!_studioAIParsed?.recommended_params) return;
+  _studioParams       = new Set(_studioAIParsed.recommended_params);
+  _studioEpiType      = _studioAIParsed.epi_type || 'prevalence';
+  _studioCustomParams = {};
+  Object.entries(_studioAIParsed.custom_params || {}).forEach(([id, def]) => {
+    if (!(id in PS_PARAM_DEFS)) _studioCustomParams[id] = def;
+  });
+  _studioParams.add('population');
+  _studioParamOrder = [..._studioAIParsed.recommended_params];
+  if (!_studioParamOrder.includes('population')) _studioParamOrder.unshift('population');
+  Object.keys(PS_PARAM_DEFS).forEach(id => {
+    const cb = document.getElementById(`ps-cb-${id}`);
+    if (cb) cb.checked = _studioParams.has(id);
+  });
+  document.querySelectorAll('input[name="ps-epi"]').forEach(r => { r.checked = r.value === _studioEpiType; });
+  document.querySelectorAll('.ps-preset-chip').forEach(c => {
+    c.classList.toggle('active', c.id === `ps-chip-${_studioAIParsed.preset_match || 'custom'}`);
+  });
+  studioUpdateFlowDiagram();
+  toast('AI recommendation applied', 'success');
+}
+
+function studioMarkCustomPreset() {
+  document.querySelectorAll('.ps-preset-chip').forEach(c => c.classList.remove('active'));
+  const customChip = document.getElementById('ps-chip-custom');
+  if (customChip) customChip.classList.add('active');
+}
+
+function studioShowAddParam(catId) {
+  toast(`Custom parameters for "${catId}" — coming soon`, '');
+}
+
+function studioUpdateFlowDiagram() {
+  const container = document.getElementById('ps-flow-diagram');
+  if (!container) return;
+
+  const epiSlot = _studioEpiType === 'incidence' ? 'incidence' : 'prevalence';
+
+  // Use AI-recommended order as primary; fall back to PS_FUNNEL_ORDER for any params not covered
+  const normalise = id => (id === 'prevalence' || id === 'incidence') ? epiSlot : id;
+  const aiOrdered   = _studioParamOrder.map(normalise);
+  const fallback    = PS_FUNNEL_ORDER.map(normalise).filter(id => !aiOrdered.includes(id));
+  const deduped     = [...new Set([...aiOrdered, ...fallback])];
+
+  // Append any custom params that are selected but not in the combined order
+  const customSelected = [..._studioParams].filter(id => !deduped.includes(id) && id in _studioCustomParams);
+  const allOrdered = [...deduped, ...customSelected];
+
+  const active = allOrdered.filter(id => _studioParams.has(id));
+
+  if (!active.length) {
+    container.innerHTML = '<div style="font-size:11px;color:var(--text-2);text-align:center;padding:12px;">No parameters selected</div>';
+    return;
+  }
+
+  let html = '<div class="ps-flow-diagram">';
+  active.forEach((id, i) => {
+    const isCustom = id in _studioCustomParams;
+    const icon  = PS_STEP_ICONS[id] || (isCustom ? '⚙️' : '📌');
+    const label = PS_STEP_SHORT[id] || (isCustom ? (_studioCustomParams[id]?.label || id) : id);
+    html += `<div class="ps-flow-step${isCustom ? ' ps-flow-step-custom' : ''}">
+      <div class="ps-flow-step-icon">${icon}</div>
+      <div class="ps-flow-step-label">${escHtml(label)}</div>
+    </div>`;
+    if (i < active.length - 1) html += '<div class="ps-flow-arrow">→</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderAssumptionsVisual(container, readable, parsed) {
+  const ctx  = _lastResult?.contextUsed || {};
+  const qry  = _lastResult?.queryUsed  || '';
+
+  // ── Context card (always shown when we have something) ────────────────
+  const ctxPairs = [
+    ['Indication',  ctx.indication],
+    ['Product',     ctx.product_name],
+    ['Drug Class',  ctx.drug_class],
+    ['Country',     ctx.country],
+    ['Period',      ctx.launch_year && ctx.peak_year ? `${ctx.launch_year}–${ctx.peak_year}` : null],
+    ['Query',       qry || null],
+  ].filter(([, v]) => v);
+
+  let contextBlock = '';
+  if (ctxPairs.length) {
+    const rows = ctxPairs.map(([k, v]) =>
+      `<div class="assumption-row">
+        <span class="assumption-key" style="min-width:90px;color:var(--text-2);">${escHtml(k)}</span>
+        <span class="assumption-value" style="color:var(--text-1);font-weight:500;">${escHtml(String(v))}</span>
+      </div>`
+    ).join('');
+    contextBlock = `
+      <div class="assumption-group" style="margin-bottom:14px;border-left:3px solid var(--primary);padding-left:10px;">
+        <div class="assumption-group-label" style="color:var(--primary);">Context Used</div>
+        ${rows}
+      </div>`;
+  }
+
+  // ── Case 1: successfully parsed array with entries ────────────────────
+  if (readable && readable.length) {
+    // Build table rows
+    const tableRows = readable.map(r => {
+      const dispVal = formatAssumptionValue(r.key, r.value);
+      const src = r.source || 'self';
+      const srcCell = src === 'self'
+        ? `<span style="color:var(--text-2);font-style:italic;">self</span>`
+        : `<a href="${escHtml(src)}" target="_blank" rel="noopener"
+              style="color:var(--primary);text-decoration:underline;word-break:break-all;font-size:10px;"
+              title="${escHtml(src)}">${escHtml(src.replace(/^https?:\/\//, '').slice(0, 40))}${src.length > 47 ? '…' : ''}</a>`;
+      return `<tr>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);padding:5px 8px;border-bottom:1px solid var(--border);word-break:break-all;">${escHtml(r.key)}</td>
+        <td style="font-size:12px;font-weight:700;color:var(--primary);padding:5px 8px;border-bottom:1px solid var(--border);white-space:nowrap;">${escHtml(dispVal)}</td>
+        <td style="font-size:11px;color:var(--text-2);padding:5px 8px;border-bottom:1px solid var(--border);font-style:italic;">${escHtml(r.rationale || '')}</td>
+        <td style="font-size:11px;padding:5px 8px;border-bottom:1px solid var(--border);">${srcCell}</td>
+      </tr>`;
+    }).join('');
+
+    let html = contextBlock;
+    html += `
+      <div style="margin-bottom:8px;">
+        <span style="font-size:10px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">
+          ${readable.length} assumption${readable.length !== 1 ? 's' : ''} generated
+        </span>
+      </div>
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--r8);margin-bottom:12px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:var(--bg);">
+              <th style="text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-2);padding:6px 8px;border-bottom:2px solid var(--border);">Variable Name</th>
+              <th style="text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-2);padding:6px 8px;border-bottom:2px solid var(--border);">Value</th>
+              <th style="text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-2);padding:6px 8px;border-bottom:2px solid var(--border);">Rationale</th>
+              <th style="text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-2);padding:6px 8px;border-bottom:2px solid var(--border);">Source</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>`;
+    container.innerHTML = html;
+    return;
+  }
+
+  // ── Case 2: AI returned empty array [] ───────────────────────────────
+  if (Array.isArray(parsed) && parsed.length === 0) {
+    container.innerHTML = contextBlock + `
+      <div class="loading-box" style="background:var(--warning-bg);border-color:rgba(217,119,6,.2);color:var(--warning);margin-bottom:10px;">
+        <strong>Agent returned no overrides.</strong> Fill in the Indication field above and run again — the agent needs product context to generate assumptions.
+      </div>
+      <div style="font-size:10px;color:var(--text-2);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Raw Response</div>
+      <div class="json-view" style="font-size:11px;max-height:200px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:var(--r8);padding:10px;">
+        ${escHtml(_lastResult?.raw || '(empty)')}
+      </div>`;
+    return;
+  }
+
+  // ── Case 3: parse failed — show raw response inline ──────────────────
+  const rawText = _lastResult?.raw || '';
+  container.innerHTML = contextBlock + `
+    <div class="error-box" style="margin-bottom:10px;">
+      Could not parse a JSON array from the response. Switch to the <strong>Raw</strong> tab to inspect the full output.
+    </div>
+    ${rawText ? `
+    <div style="font-size:10px;color:var(--text-2);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Raw Response (first 800 chars)</div>
+    <div class="json-view" style="font-size:11px;max-height:240px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:var(--r8);padding:10px;">
+      ${escHtml(rawText.slice(0, 800))}${rawText.length > 800 ? '\n…' : ''}
+    </div>` : ''}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────
+function formatAssumptionValue(key, val) {
+  if (val === null || val === undefined) return '—';
+  const k = (key || '').toLowerCase();
+  if (typeof val === 'number') {
+    if (k.includes('rate') || k.includes('share') || k.includes('percentage') || k.includes('discount') || k.includes('compliance')) {
+      return (val * 100).toFixed(1) + '%';
+    }
+    if (k.includes('price') || k.includes('cost')) return '$' + val.toLocaleString();
+    if (k.includes('population') && val > 10000) return val.toLocaleString();
+    if (k.includes('period') || k.includes('year')) return val + ' yrs';
+    return val.toLocaleString();
+  }
+  return String(val);
+}
+
+function fmtRate(v) {
+  if (v == null) return '—';
+  if (v <= 1) return (v * 100).toFixed(2) + '%';
+  return v.toLocaleString();
+}
+
+function fmtNum(v) {
+  if (v == null) return '—';
+  return typeof v === 'number' ? v.toLocaleString() : String(v);
+}
+
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function syntaxHighlight(json) {
+  if (typeof json !== 'string') json = String(json);
+  return json
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+      let cls = 'color:var(--gold-light)';
+      if (/^"/.test(m)) {
+        cls = /:$/.test(m) ? 'color:var(--steel)' : 'color:#86efac';
+      } else if (/true|false/.test(m)) {
+        cls = 'color:#f9a8d4';
+      } else if (/null/.test(m)) {
+        cls = 'color:var(--text-2)';
+      }
+      return `<span style="${cls}">${m}</span>`;
+    });
+}
+
+function toast(msg, type = '') {
+  const ct = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  ct.appendChild(el);
+  setTimeout(() => { el.remove(); }, 3500);
+}
+</script>
+</body>
+</html>
